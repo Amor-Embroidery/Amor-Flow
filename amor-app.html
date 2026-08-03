@@ -1,1 +1,1400 @@
 
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AMOR Embroidery</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;flex-direction:column;background:#fff;color:#003049;}
+:root{
+  --navy:#003049;--blue:#0077b6;--red:#C0392B;--green:#1E8449;--amber:#D4860A;
+  --bg:#fff;--white:#fff;--muted:#888;--border:#dde3ea;--card:#f7f9fc;
+}
+
+/* TOPBAR */
+.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;
+  padding:0 14px;height:56px;min-height:56px;gap:8px;flex-shrink:0;}
+.tb-back{background:none;border:none;color:#fff;font-size:1.3rem;padding:4px 8px;
+  cursor:pointer;display:none;line-height:1;font-family:inherit;}
+.tb-info{flex:1;min-width:0;}
+.tb-title{font-size:1rem;font-weight:700;letter-spacing:.5px;}
+.tb-sub{font-size:.65rem;opacity:.65;}
+.tb-new{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;
+  padding:5px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#555;flex-shrink:0;}
+.conn-dot.ok{background:#6FCF97;}
+.tb-cfg{background:none;border:none;color:rgba(255,255,255,.65);font-size:1.1rem;cursor:pointer;padding:4px;}
+
+/* CONTENT */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.page{display:none;padding-bottom:76px;}
+.page.on{display:block;}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;background:#fff;border-top:1.5px solid var(--border);
+  flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 0;cursor:pointer;border:none;background:none;color:var(--muted);
+  font-size:.6rem;font-weight:600;gap:2px;font-family:inherit;}
+.bn .bi{font-size:1.3rem;line-height:1;}
+.bn.on{color:var(--navy);}
+
+/* SECTION HEADER */
+.sec-hd{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--blue);margin:14px 14px 8px;}
+
+/* ── POS ── */
+.pos-wrap{padding:14px 14px 0;}
+.type-toggle{display:flex;gap:8px;}
+.type-btn{flex:1;padding:12px 8px;border-radius:12px;border:2px solid var(--border);
+  background:#fff;color:var(--muted);font-family:inherit;font-size:.85rem;font-weight:600;
+  cursor:pointer;line-height:1.35;text-align:center;}
+.type-btn.on{border-color:var(--navy);background:var(--navy);color:#fff;}
+.type-btn small{font-weight:400;font-size:.6rem;display:block;margin-top:2px;opacity:.75;}
+
+.size-scroll{display:flex;gap:6px;overflow-x:auto;padding:0 14px 4px;scrollbar-width:none;}
+.size-scroll::-webkit-scrollbar{display:none;}
+.size-chip{flex-shrink:0;padding:9px 13px;border-radius:10px;border:1.5px solid var(--border);
+  background:#fff;font-family:inherit;font-size:.78rem;font-weight:600;color:var(--navy);
+  cursor:pointer;white-space:nowrap;}
+.size-chip.on{border-color:var(--navy);background:var(--navy);color:#fff;}
+
+.qty-row{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;}
+.qty-lbl{font-size:.8rem;font-weight:600;}
+.counter{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.ctr-btn{width:40px;height:40px;border:none;background:var(--card);font-size:1.2rem;
+  font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;}
+.ctr-val{width:52px;text-align:center;font-size:1rem;font-weight:700;background:#fff;}
+
+.price-display{margin:6px 14px;padding:12px 14px;background:var(--navy);border-radius:12px;color:#fff;
+  display:flex;align-items:center;justify-content:space-between;}
+.pd-thb{font-size:1.5rem;font-weight:700;}
+.pd-lak{font-size:.75rem;opacity:.65;margin-top:2px;}
+.pd-per{font-size:.68rem;opacity:.6;}
+
+.add-cart-btn{display:block;width:calc(100% - 28px);margin:8px 14px;padding:13px;
+  border-radius:12px;border:2px dashed var(--blue);background:transparent;color:var(--blue);
+  font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;}
+
+/* CART */
+.cart-item{margin:0 14px 6px;padding:10px 12px;background:#fff;border:1.5px solid var(--border);
+  border-radius:10px;display:flex;align-items:center;gap:8px;}
+.ci-info{flex:1;}
+.ci-type{font-size:.75rem;font-weight:700;color:var(--navy);}
+.ci-price{font-size:.8rem;color:var(--blue);font-weight:600;margin-top:1px;}
+.ci-del{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;
+  padding:4px;line-height:1;}
+.cart-total-row{margin:0 14px 6px;padding:10px 14px;background:var(--card);border:1.5px solid var(--border);
+  border-radius:10px;display:flex;justify-content:space-between;align-items:center;}
+.ct-lbl{font-size:.72rem;color:var(--muted);}
+.ct-thb{font-size:1rem;font-weight:700;color:var(--navy);}
+.ct-lak{font-size:.68rem;color:var(--muted);margin-top:1px;}
+
+.pos-go-btn{display:block;width:calc(100% - 28px);margin:6px 14px 16px;padding:14px;
+  border-radius:14px;border:none;background:var(--blue);color:#fff;font-family:inherit;
+  font-size:1rem;font-weight:700;cursor:pointer;}
+.pos-empty{text-align:center;padding:16px;font-size:.78rem;color:var(--muted);}
+
+/* ── ORDER FORM ── */
+.form-wrap{padding:12px 14px 0;}
+.field{margin-bottom:11px;}
+.field label{display:block;font-size:.63rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.field input,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);
+  border-radius:10px;background:#fff;color:var(--navy);font-family:inherit;font-size:.9rem;
+  outline:none;}
+.field input:focus,.field textarea:focus{border-color:var(--navy);}
+.field textarea{min-height:66px;resize:none;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.req{color:var(--red);}
+.hint{font-size:.6rem;color:var(--muted);margin-top:3px;}
+
+/* ITEM SECTION in order form */
+.item-sec{background:var(--card);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px;margin-bottom:10px;}
+.item-sec-hd{font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;}
+.item-sec-price{font-size:.82rem;font-weight:700;color:var(--blue);}
+
+/* RUSH TOGGLE */
+.rush-toggle{display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:var(--card);border:1.5px solid var(--border);border-radius:12px;
+  cursor:pointer;margin-bottom:10px;}
+.rush-toggle.on{background:#fff8e6;border-color:var(--amber);}
+.rush-ico{font-size:1.3rem;}
+.rush-info{flex:1;}
+.rush-title{font-size:.82rem;font-weight:700;color:var(--navy);}
+.rush-sub{font-size:.65rem;color:var(--muted);}
+.rush-pill{font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:20px;
+  background:var(--border);color:var(--muted);}
+.rush-toggle.on .rush-pill{background:var(--amber);color:#fff;}
+
+/* SCHEDULE CARD */
+.schedule-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px;margin-bottom:10px;}
+.sch-hd{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--blue);margin-bottom:8px;}
+.sch-row{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:5px 0;border-bottom:1px solid var(--border);}
+.sch-row:last-child{border-bottom:none;padding-bottom:0;}
+.sch-lbl{font-size:.68rem;color:var(--muted);flex-shrink:0;padding-top:2px;}
+.sch-val{font-size:.82rem;font-weight:600;color:var(--navy);text-align:right;}
+.sch-hint{font-size:.6rem;color:var(--muted);margin-top:2px;}
+.sch-date-input{border:none;background:transparent;font-family:inherit;font-size:.82rem;
+  font-weight:600;color:var(--blue);outline:none;text-align:right;}
+
+/* ORDER TOTAL */
+.order-total-bar{background:var(--navy);color:#fff;padding:13px 16px;border-radius:14px;margin:10px 0;}
+.otb-row{display:flex;justify-content:space-between;align-items:center;}
+.otb-lbl{font-size:.7rem;opacity:.7;}
+.otb-thb{font-size:1.3rem;font-weight:700;}
+.otb-lak{font-size:.72rem;opacity:.65;margin-top:2px;}
+.otb-rush{font-size:.65rem;color:var(--amber);margin-top:3px;}
+
+/* CURRENCY */
+.cur-lbl{font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:5px;}
+.currency-row{display:flex;gap:8px;margin-bottom:12px;}
+.cur-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--border);
+  background:#fff;color:var(--muted);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;}
+.cur-btn.on{border-color:var(--navy);background:var(--navy);color:#fff;}
+
+/* SUBMIT BUTTONS */
+.submit-row{display:flex;gap:8px;margin-bottom:16px;}
+.submit-btn{flex:1;padding:14px;border-radius:14px;border:none;font-family:inherit;
+  font-size:.9rem;font-weight:700;cursor:pointer;}
+.submit-new{background:var(--card);color:var(--navy);border:1.5px solid var(--border);}
+.submit-close{background:var(--navy);color:#fff;}
+
+/* ── QUEUE ── */
+#page-queue{padding:10px 0 80px;}
+.week-nav{display:flex;align-items:center;gap:6px;padding:6px 14px;}
+.wn-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;
+  font-family:inherit;font-size:.75rem;cursor:pointer;color:var(--navy);}
+.wn-lbl{flex:1;text-align:center;font-size:.78rem;font-weight:600;}
+.q-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 14px 8px;}
+.qs-box{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;}
+.qs-n{display:block;font-size:1.2rem;font-weight:700;color:var(--navy);}
+.qs-l{display:block;font-size:.57rem;color:var(--muted);}
+.day-section{margin:0 14px 10px;}
+.day-head{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px 10px 0 0;
+  font-size:.78rem;font-weight:700;background:var(--card);border:1.5px solid var(--border);border-bottom:none;}
+.dh-t{background:var(--navy);color:#fff;border-color:var(--navy);}
+.dh-name{flex:1;}
+.dh-date{opacity:.7;font-weight:400;}
+.dh-slots{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--blue);color:#fff;}
+.day-body{border:1.5px solid var(--border);border-radius:0 0 10px 10px;border-top:none;overflow:hidden;}
+.day-empty{padding:12px;text-align:center;font-size:.75rem;color:var(--muted);}
+
+/* QUEUE CARD */
+.q-card{padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;
+  background:#fff;position:relative;}
+.q-card:last-child{border-bottom:none;}
+.s-new{border-left:3px solid var(--blue);}
+.s-in-progress{border-left:3px solid var(--amber);}
+.s-done{border-left:3px solid var(--green);opacity:.72;}
+.s-rush{border-left:3px solid var(--red);}
+.next-lbl{position:absolute;top:7px;right:8px;font-size:.52rem;font-weight:700;
+  background:var(--navy);color:#fff;padding:2px 6px;border-radius:10px;letter-spacing:1px;}
+.rush-badge{font-size:.55rem;font-weight:700;background:var(--red);color:#fff;
+  padding:1px 5px;border-radius:6px;margin-left:4px;}
+.qc-top{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
+.qc-id{font-size:.65rem;font-weight:700;color:var(--muted);}
+.qc-seq{font-size:.62rem;color:var(--muted);margin-left:auto;}
+.qc-name{font-size:.9rem;font-weight:700;}
+.qc-svc{font-size:.7rem;color:var(--muted);margin:2px 0;}
+.qc-det{font-size:.72rem;color:var(--navy);}
+.qc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:7px;}
+.qc-btn{font-family:inherit;font-size:.72rem;font-weight:600;padding:5px 11px;
+  border-radius:8px;border:none;cursor:pointer;background:var(--card);color:var(--navy);}
+.qc-btn.go{background:var(--amber);color:#fff;}
+.qc-btn.done{background:var(--green);color:#fff;}
+.qc-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.qc-total{font-size:.78rem;font-weight:700;color:var(--navy);}
+.days-left{font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:8px;}
+.dl-ok{background:#e8f0fe;color:var(--blue);}
+.dl-warn{background:#fff3cd;color:#7d5800;}
+.dl-urgent{background:#fde8e8;color:var(--red);}
+.dl-due{background:var(--red);color:#fff;}
+
+/* ── DASHBOARD ── */
+#page-dashboard{padding:10px 14px 80px;}
+.fp-row{display:flex;gap:6px;margin-bottom:10px;}
+.fp-btn{flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--border);background:#fff;
+  font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--navy);}
+.fp-btn.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.db-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;}
+.st-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:13px;text-align:center;}
+.st-n{display:block;font-size:1.4rem;font-weight:700;color:var(--navy);}
+.st-l{display:block;font-size:.6rem;color:var(--muted);margin-top:2px;}
+.pay-strip{display:flex;gap:8px;margin-bottom:10px;}
+.pay-half{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--border);text-align:center;background:var(--card);}
+.ph-lbl{display:block;font-size:.6rem;color:var(--muted);margin-bottom:3px;}
+.ph-val{display:block;font-size:1rem;font-weight:700;}
+.ph-col{color:var(--green);}
+.ph-out{color:var(--red);}
+.ph-sub{display:block;font-size:.58rem;color:var(--muted);margin-top:1px;}
+.db-lbl-text{font-size:.78rem;font-weight:700;margin-bottom:8px;display:block;}
+.ord-row{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;}
+.or-id{font-size:.62rem;font-weight:700;color:var(--muted);}
+.or-name{font-size:.9rem;font-weight:700;}
+.or-det{font-size:.7rem;color:var(--muted);margin:2px 0;}
+.or-total{font-size:.9rem;font-weight:700;}
+.or-lak{font-size:.62rem;color:var(--muted);}
+.or-date{font-size:.62rem;color:var(--muted);margin-top:2px;}
+.or-btn{background:none;border:1.5px solid var(--border);border-radius:7px;padding:3px 8px;
+  font-size:.65rem;cursor:pointer;color:var(--navy);font-family:inherit;margin-top:4px;}
+.pill{font-size:.57rem;font-weight:700;padding:2px 7px;border-radius:10px;}
+.p-new{background:#e8f0fe;color:#0077b6;}
+.p-prog{background:#fff3cd;color:#7d5800;}
+.p-done{background:#d4edda;color:#1E8449;}
+.pill-pay{font-size:.57rem;font-weight:700;padding:2px 7px;border-radius:10px;}
+.pp-full{background:#d4edda;color:#1E8449;}
+.pp-dep{background:#fff3cd;color:#7d5800;}
+.pp-none{background:#fde8e8;color:#C0392B;}
+.pay-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.pbtn{font-family:inherit;font-size:.72rem;font-weight:600;padding:6px 10px;border-radius:8px;border:none;cursor:pointer;}
+.pbtn-full{background:var(--green);color:#fff;}
+.pbtn-dep{background:var(--amber);color:#fff;}
+.pbtn-undo{background:var(--card);color:var(--navy);border:1px solid var(--border);}
+
+/* ── MODAL ── */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;
+  align-items:flex-end;justify-content:center;z-index:100;}
+.modal.on{display:flex;}
+.modal-box{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:500px;
+  max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-hd{display:flex;align-items:center;padding:14px 16px;border-bottom:1.5px solid var(--border);
+  font-size:.9rem;font-weight:700;flex-shrink:0;}
+.modal-hd button{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);margin-left:auto;}
+.modal-body{overflow-y:auto;padding:14px 16px;flex:1;}
+.m-row{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:6px 0;border-bottom:1px solid var(--border);gap:10px;}
+.m-lbl{font-size:.65rem;color:var(--muted);flex-shrink:0;padding-top:1px;}
+.m-val{font-size:.78rem;font-weight:600;text-align:right;word-break:break-word;}
+.modal-btns{display:flex;gap:7px;flex-wrap:wrap;padding:10px 16px;
+  border-top:1.5px solid var(--border);flex-shrink:0;}
+.mbtn{font-family:inherit;font-size:.78rem;font-weight:600;padding:9px 12px;
+  border-radius:10px;border:none;cursor:pointer;flex:1;}
+.mb-prog{background:var(--amber);color:#fff;}
+.mb-done{background:var(--green);color:#fff;}
+.mb-undo{background:var(--card);color:var(--navy);}
+.mb-del{background:var(--red);color:#fff;}
+.mb-rcpt{background:var(--card);color:var(--navy);}
+.pay-partial-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;
+  font-family:inherit;font-size:.88rem;margin-top:6px;background:#fff;outline:none;}
+.pay-sub-hd{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--blue);margin-bottom:8px;}
+
+/* ── RECEIPT ── */
+#r-modal .modal-box{max-height:92vh;}
+.receipt-actions{display:flex;gap:8px;padding:10px 16px;border-top:1.5px solid var(--border);flex-shrink:0;}
+.ra-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);
+  font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;background:var(--card);}
+#pzone{padding:12px 16px;overflow-y:auto;flex:1;}
+.receipt{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;max-width:320px;margin:0 auto;}
+.r-head{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:2px solid var(--navy);}
+.r-head-name{font-size:1.05rem;font-weight:700;}
+.r-head-sub{font-size:.62rem;color:var(--muted);}
+.r-head-id{font-size:.68rem;font-weight:700;background:var(--navy);color:#fff;padding:4px 9px;border-radius:6px;}
+.rb-info{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0;}
+.rg-lbl{display:block;font-size:.57rem;color:var(--muted);}
+.rg-val{display:block;font-size:.78rem;font-weight:600;}
+.rb-items{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.rbi{padding:8px 10px;border-bottom:1px solid var(--border);}
+.rbi:last-child{border-bottom:none;}
+.rbi-top{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;}
+.rbi-det{font-size:.67rem;color:var(--muted);margin-top:2px;line-height:1.4;}
+.r-total{border-top:1.5px dashed var(--border);padding-top:8px;margin-top:6px;}
+.rt-row{display:flex;justify-content:space-between;font-size:.75rem;padding:3px 0;gap:8px;}
+.rt-row.grand{font-weight:700;font-size:.9rem;border-top:1.5px solid var(--navy);margin-top:6px;padding-top:6px;}
+.rt-due{color:var(--red);font-weight:700;}
+.r-foot{margin-top:12px;text-align:center;border-top:1.5px dashed var(--border);padding-top:10px;}
+.r-thank{font-size:.82rem;font-weight:700;}
+.r-tag{font-size:.66rem;color:var(--muted);margin-top:2px;}
+
+/* CFG */
+.cfg-box{padding:14px 16px;}
+.cfg-box textarea{width:100%;height:130px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:monospace;font-size:.75rem;padding:10px;resize:none;margin-bottom:8px;outline:none;}
+.cfg-actions{display:flex;gap:8px;}
+.cfg-btn{flex:1;padding:10px;border-radius:10px;border:none;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;}
+.cfg-save{background:var(--navy);color:#fff;}
+.cfg-disc{background:var(--card);color:var(--red);}
+#cfg-status{font-size:.72rem;margin-top:6px;}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.ei{font-size:2.5rem;margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="tb-back" id="tb-back" onclick="goBack()">‹</button>
+  <div class="tb-info">
+    <div class="tb-title" id="tb-title">AMOR ✶</div>
+    <div class="tb-sub" id="tb-sub">ເລືອກການປັກ</div>
+  </div>
+  <button class="tb-new" id="tb-new" style="display:none" onclick="goPage('pos')">+ ໃໝ່</button>
+  <span class="conn-dot" id="conn-dot"></span>
+  <button class="tb-cfg" onclick="openCfg()">⚙</button>
+</div>
+
+<div id="content">
+
+<!-- ══ POS PAGE ══ -->
+<div class="page on" id="page-pos">
+  <div class="pos-wrap">
+    <div class="sec-hd" style="margin-top:14px;margin-bottom:8px">ປະເພດ · Design Type</div>
+    <div class="type-toggle">
+      <button class="type-btn on" id="btn-simple" onclick="setType('simple')">✍️ Simple<small>ຂໍ້ຄວາມ / ຕົວໜັງສື</small></button>
+      <button class="type-btn" id="btn-complex" onclick="setType('complex')">🎨 Complex<small>ໂລໂກ້ / ດີໄຊສັບຊ້ອນ</small></button>
+    </div>
+  </div>
+
+  <div class="sec-hd" style="margin-top:14px">ຂະໜາດ (cm)</div>
+  <div class="size-scroll" id="size-scroll"></div>
+
+  <div class="qty-row">
+    <span class="qty-lbl">ຈໍານວນ (ຊິ້ນ)</span>
+    <div class="counter">
+      <button class="ctr-btn" onclick="chQty(-1)">−</button>
+      <div class="ctr-val" id="pos-qty">1</div>
+      <button class="ctr-btn" onclick="chQty(1)">+</button>
+    </div>
+  </div>
+
+  <div class="price-display">
+    <div>
+      <div style="font-size:.65rem;opacity:.65;margin-bottom:3px">ລາຄາລາຍການນີ້</div>
+      <div class="pd-thb" id="pd-thb">฿50</div>
+      <div class="pd-lak" id="pd-lak">₭34,500</div>
+    </div>
+    <div style="text-align:right"><div class="pd-per" id="pd-per">฿50 / ຊ</div></div>
+  </div>
+
+  <button class="add-cart-btn" onclick="addToCart()">⊕ ເພີ່ມລາຍການນີ້</button>
+
+  <!-- Cart section — hidden until first item added -->
+  <div id="cart-section" style="display:none">
+    <div class="sec-hd">ລາຍການທີ່ເລືອກ</div>
+    <div id="cart-items-list"></div>
+    <div class="cart-total-row" id="cart-total-row">
+      <div><div class="ct-lbl">ລາຄາລວມ</div></div>
+      <div style="text-align:right">
+        <div class="ct-thb" id="ct-thb">฿0</div>
+        <div class="ct-lak" id="ct-lak">₭0</div>
+      </div>
+    </div>
+    <button class="pos-go-btn" onclick="goToOrderForm()">ຕໍ່ໄປ: ຟອມຄໍາສັ່ງ →</button>
+  </div>
+  <div class="pos-empty" id="pos-hint">ເລືອກດີໄຊ, ຂະໜາດ ແລະ ຈໍານວນ · ກົດ ⊕ ເພີ່ມ</div>
+</div>
+
+<!-- ══ ORDER FORM PAGE ══ -->
+<div class="page" id="page-order">
+  <div class="form-wrap">
+
+    <!-- Customer Info -->
+    <div class="sec-hd" style="margin:14px 0 8px">ຂໍ້ມູນລູກຄ້າ</div>
+    <div class="field"><label>ຊື່ລູກຄ້າ <span class="req">*</span></label>
+      <input type="text" id="f-name" placeholder="ຊື່ ແລະ ນາມສະກຸນ"></div>
+    <div class="field"><label>ເບີໂທ</label>
+      <input type="tel" id="f-phone" placeholder="020 xxx xxxx"></div>
+
+    <!-- Per-item sections (generated from cart) -->
+    <div class="sec-hd" style="margin:14px 0 8px">ລາຍລະອຽດການປັກ</div>
+    <div id="order-items"></div>
+
+    <!-- Rush toggle -->
+    <div class="sec-hd" style="margin:14px 0 8px">ກໍານົດການ</div>
+    <div class="rush-toggle" id="rush-box" onclick="togRush()">
+      <div class="rush-ico">⚡</div>
+      <div class="rush-info">
+        <div class="rush-title">ດ່ວນ · Rush Order</div>
+        <div class="rush-sub">ເຂົ້າຄິວ ມື້ຖັດໄປ · ຄ່າດ່ວນ +฿<span id="rush-fee-lbl">100</span></div>
+      </div>
+      <div class="rush-pill" id="rush-pill">ປິດ</div>
+    </div>
+
+    <!-- Schedule card -->
+    <div class="schedule-card">
+      <div class="sch-hd">ຕາຕະລາງ</div>
+      <div class="sch-row">
+        <span class="sch-lbl">ເຂົ້າຄິວ</span>
+        <div>
+          <div class="sch-val" id="sch-queue-date">—</div>
+          <div class="sch-hint">ອັດຕະໂນມັດ</div>
+        </div>
+      </div>
+      <div class="sch-row" style="padding-top:8px">
+        <span class="sch-lbl">ຮັບສິນຄ້າ</span>
+        <div>
+          <input class="sch-date-input" type="date" id="f-pickup" onchange="updSchHint()">
+          <div class="sch-hint" id="sch-pickup-hint">7 ວັນທໍາການ · ປ່ຽນໄດ້</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total -->
+    <div class="order-total-bar">
+      <div class="otb-row">
+        <span class="otb-lbl">ລາຄາລວມ</span>
+        <div style="text-align:right">
+          <div class="otb-thb" id="otb-thb">฿0</div>
+          <div class="otb-lak" id="otb-lak">₭0</div>
+        </div>
+      </div>
+      <div class="otb-rush" id="otb-rush" style="display:none">+ ຄ່າດ່ວນ ฿100 ລວມຢູ່ໃນລາຄານີ້</div>
+    </div>
+
+    <!-- Currency -->
+    <div class="cur-lbl">ລູກຄ້າຈ່າຍໃນສະກຸນ</div>
+    <div class="currency-row">
+      <button class="cur-btn on" id="cur-thb" onclick="setCur('THB')">฿ ບາດ (THB)</button>
+      <button class="cur-btn" id="cur-lak" onclick="setCur('LAK')">₭ ກີບ (LAK)</button>
+    </div>
+
+    <!-- Submit buttons -->
+    <div class="submit-row">
+      <button class="submit-btn submit-new" onclick="doSubmit('new')">+ ຄໍາສັ່ງໃໝ່</button>
+      <button class="submit-btn submit-close" onclick="doSubmit('close')">ບັນທຶກ ✓</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ QUEUE PAGE ══ -->
+<div class="page" id="page-queue">
+  <div class="week-nav">
+    <button class="wn-btn" onclick="shiftW(-1)">‹ ກ່ອນ</button>
+    <span class="wn-lbl" id="wk-lbl">ອາທິດນີ້</span>
+    <button class="wn-btn" onclick="wkToday()">ວັນນີ້</button>
+    <button class="wn-btn" onclick="shiftW(1)">ຕໍ່ ›</button>
+  </div>
+  <div class="q-stats" id="q-stats"></div>
+  <div id="q-days"></div>
+</div>
+
+<!-- ══ DASHBOARD PAGE ══ -->
+<div class="page" id="page-dashboard">
+  <div class="fp-row">
+    <button class="fp-btn on" onclick="setFilt('all',this)">ທັງໝົດ</button>
+    <button class="fp-btn" onclick="setFilt('month',this)">ເດືອນ</button>
+    <button class="fp-btn" onclick="setFilt('week',this)">ອາທິດ</button>
+    <button class="fp-btn" onclick="setFilt('today',this)">ວັນນີ້</button>
+  </div>
+  <div class="db-stats" id="db-stats"></div>
+  <span class="db-lbl-text" id="db-lbl">ຄໍາສັ່ງ</span>
+  <div id="db-list"></div>
+</div>
+
+</div><!-- /content -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bn on" id="bn-pos" onclick="goPage('pos')"><span class="bi">🏪</span>POS</button>
+  <button class="bn" id="bn-order" onclick="goPage('order')"><span class="bi">📝</span>ຟອມ</button>
+  <button class="bn" id="bn-queue" onclick="goPage('queue')"><span class="bi">📋</span>ຄິວ</button>
+  <button class="bn" id="bn-dashboard" onclick="goPage('dashboard')"><span class="bi">📊</span>Dashboard</button>
+</div>
+
+<!-- QUEUE DETAIL MODAL -->
+<div class="modal" id="q-modal">
+  <div class="modal-box">
+    <div class="modal-hd"><span id="qm-title">ຄໍາສັ່ງ</span><button onclick="closeQM()">✕</button></div>
+    <div class="modal-body" id="qm-body"></div>
+    <div class="modal-btns" id="qm-btns"></div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal" id="r-modal">
+  <div class="modal-box">
+    <div class="modal-hd">ໃບຮັບເງິນ · Receipt<button onclick="closeRM()">✕</button></div>
+    <div id="pzone"></div>
+    <div class="receipt-actions">
+      <button class="ra-btn" onclick="window.print()">🖨 ພິມ</button>
+      <button class="ra-btn" onclick="closeRM()">ປິດ</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIREBASE CONFIG MODAL -->
+<div class="modal" id="cfg-modal">
+  <div class="modal-box">
+    <div class="modal-hd">Firebase Config ⚙<button onclick="closeCfg()">✕</button></div>
+    <div class="cfg-box">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">ວາງ Firebase JSON config:</div>
+      <textarea id="cfg-json" placeholder='{"apiKey":"...","projectId":"..."}'></textarea>
+      <div id="cfg-status"></div>
+      <div class="cfg-actions">
+        <button class="cfg-btn cfg-save" onclick="saveFirebaseCfg()">✓ ບັນທຶກ</button>
+        <button class="cfg-btn cfg-disc" onclick="disconnectFirebase()">✗ ຕັດ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+'use strict';
+var KEY='amor_orders_v2', FCKEY='amor_fb_cfg';
+var DAYS=['ອາ','ຈ','ອ','ພ','ພຫ','ສ','ເສ'];
+var LAK_RATE=690;   // 1 THB = 690 LAK
+var RUSH_FEE=300;   // THB
+var CAP=8;          // max normal orders per day
+
+var SIMPLE=[
+  {r:'1-2',p:50},{r:'3-4',p:60},{r:'5-6',p:70},{r:'7-8',p:80},{r:'9-10',p:90},
+  {r:'11-12',p:100},{r:'13-14',p:110},{r:'15-16',p:120},{r:'17-18',p:130},
+  {r:'19-20',p:140},{r:'21-22',p:150},{r:'23-24',p:160},{r:'25-26',p:170}
+];
+var COMPLEX=[
+  {r:'1-2',p:70},{r:'3-4',p:100},{r:'5-6',p:130},{r:'7-8',p:160},{r:'9-10',p:190},
+  {r:'11-12',p:220},{r:'13-14',p:250},{r:'15-16',p:280},{r:'17-18',p:310},
+  {r:'19-20',p:340},{r:'21-22',p:370},{r:'23-24',p:400},{r:'25-26',p:430}
+];
+
+// State
+var cart=[];         // [{type,size,qty,pp,sub}]
+var itemForms=[];    // [{det,font,thread,pos}] — persisted when navigating away
+var posType='simple', posSize='1-2', posQty=1;
+var isRush=false, payCurrency='THB';
+var curPage='pos', prevPage='pos', wkOff=0, dbFilt='all';
+var ordersCache=[], _fdb=null, _unsub=null;
+var _previewQueueDate=''; // calculated queue date shown in form
+
+// ─────────────────────────────────────────────────
+// STORAGE / FIREBASE
+// ─────────────────────────────────────────────────
+function loadO(){
+  if(_fdb) return ordersCache;
+  try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){return[];}
+}
+function saveO(arr){
+  ordersCache=arr.slice();
+  localStorage.setItem(KEY,JSON.stringify(arr));
+  if(!_fdb)return;
+  var col=_fdb.collection('orders');
+  arr.forEach(function(o){col.doc(o.id).set(o);});
+}
+function initFirebase(cfg){
+  try{
+    if(firebase.apps.length)firebase.apps[0].delete();
+    var app=firebase.initializeApp(cfg);
+    _fdb=firebase.firestore(app);
+    if(_unsub)_unsub();
+    _unsub=_fdb.collection('orders').onSnapshot(function(snap){
+      ordersCache=[];
+      snap.forEach(function(d){ordersCache.push(d.data());});
+      ordersCache.sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+      localStorage.setItem(KEY,JSON.stringify(ordersCache));
+      if(curPage==='queue')renderQ();
+      if(curPage==='dashboard')renderD();
+    });
+    setConnDot(true);return true;
+  }catch(e){console.error(e);setConnDot(false);return false;}
+}
+function setConnDot(ok){var d=document.getElementById('conn-dot');if(d)d.className='conn-dot'+(ok?' ok':'');}
+function saveFirebaseCfg(){
+  var raw=(document.getElementById('cfg-json')||{value:''}).value.trim();
+  var cfg;try{cfg=JSON.parse(raw);}catch(e){alert('JSON ຜິດ');return;}
+  if(initFirebase(cfg)){
+    localStorage.setItem(FCKEY,raw);
+    var s=document.getElementById('cfg-status');
+    if(s){s.innerHTML='✓ ເຊື່ອມຕໍ່ສໍາເລັດ';s.style.color='var(--green)';}
+    setTimeout(closeCfg,1500);
+  } else {
+    var s=document.getElementById('cfg-status');
+    if(s){s.innerHTML='✗ ຜິດ';s.style.color='var(--red)';}
+  }
+}
+function disconnectFirebase(){
+  if(_unsub){_unsub();_unsub=null;}_fdb=null;
+  try{if(firebase.apps.length)firebase.apps[0].delete();}catch(e){}
+  localStorage.removeItem(FCKEY);setConnDot(false);ordersCache=[];closeCfg();
+}
+function openCfg(){
+  var tj=document.getElementById('cfg-json');if(tj)tj.value=localStorage.getItem(FCKEY)||'';
+  var s=document.getElementById('cfg-status');
+  if(s){s.style.color='';s.innerHTML=_fdb?'✓ ເຊື່ອມຕໍ່ຢູ່':'ຍັງບໍ່ໄດ້ເຊື່ອມ';}
+  var m=document.getElementById('cfg-modal');if(m)m.classList.add('on');
+}
+function closeCfg(){var m=document.getElementById('cfg-modal');if(m)m.classList.remove('on');}
+(function(){var s=localStorage.getItem(FCKEY);if(s){try{setTimeout(function(){initFirebase(JSON.parse(s));},600);}catch(e){}}})();
+
+// ─────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────
+function baht(n){return'฿'+(Number(parseFloat(n)||0).toLocaleString());}
+function lak(n){return'₭'+Math.round(parseFloat(n)||0).toLocaleString();}
+function toLak(thb){return Math.round((parseFloat(thb)||0)*LAK_RATE);}
+function tday(){return new Date().toISOString().split('T')[0];}
+function fdate(ds){
+  if(!ds)return'—';
+  try{return new Date(ds+'T12:00:00').toLocaleDateString('lo-LA',{day:'numeric',month:'short',weekday:'short'});}
+  catch(e){return ds;}
+}
+function fdateShort(ds){
+  if(!ds)return'—';
+  try{return new Date(ds+'T12:00:00').toLocaleDateString('lo-LA',{day:'numeric',month:'short'});}
+  catch(e){return ds;}
+}
+function newId(){return'AMR-'+String(loadO().length+1).padStart(4,'0');}
+function getPP(type,size){
+  var arr=(type==='complex')?COMPLEX:SIMPLE;
+  for(var i=0;i<arr.length;i++){if(arr[i].r===size)return arr[i].p;}
+  return arr[0].p;
+}
+
+// Working-day helpers
+function nextWorkDay(fromDate,skipDays){
+  // skipDays=0: same day if weekday, else next; skipDays=1: skip today, find next weekday
+  var d=new Date(fromDate+'T12:00:00');
+  if(skipDays>0) d.setDate(d.getDate()+1);
+  for(var i=0;i<30;i++){
+    if(d.getDay()!==0&&d.getDay()!==6) return d.toISOString().split('T')[0];
+    d.setDate(d.getDate()+1);
+  }
+  return fromDate;
+}
+function addWorkDays(fromDate,n){
+  var d=new Date(fromDate+'T12:00:00'),added=0;
+  while(added<n){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)added++;}
+  return d.toISOString().split('T')[0];
+}
+function workDaysLeft(fromDate,toDate){
+  var d=new Date(fromDate+'T12:00:00');
+  var end=new Date(toDate+'T12:00:00');
+  var count=0;
+  while(d<end){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)count++;}
+  return count;
+}
+function calDaysLeft(toDate){
+  var now=new Date();now.setHours(0,0,0,0);
+  var pd=new Date(toDate+'T12:00:00');
+  return Math.round((pd-now)/(1000*60*60*24));
+}
+
+// Auto-assign queue date: find first weekday with available slot
+function nextAvailSlot(rush){
+  var ord=loadO();
+  var start=tday();
+  if(rush){
+    // Rush = next working day from today (skip today)
+    return nextWorkDay(start,1);
+  }
+  // Normal = first weekday from today with available slot
+  var d=new Date(start+'T12:00:00');
+  for(var i=0;i<60;i++){
+    var ds=d.toISOString().split('T')[0];
+    if(d.getDay()!==0&&d.getDay()!==6){
+      var used=ord.filter(function(o){return o.queueDate===ds&&!o.isRush;}).length;
+      if(used<CAP) return ds;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return start;
+}
+
+// ─────────────────────────────────────────────────
+// POS — CART
+// ─────────────────────────────────────────────────
+function buildPOS(){
+  var sc=document.getElementById('size-scroll');
+  if(sc) sc.innerHTML=SIMPLE.map(function(p){
+    return'<button class="size-chip'+(p.r===posSize?' on':'')+
+      '" onclick="setSize(\''+p.r+'\')">'+p.r+' cm</button>';
+  }).join('');
+  updPD();
+}
+
+function setType(t){
+  posType=t;
+  document.getElementById('btn-simple').classList.toggle('on',t==='simple');
+  document.getElementById('btn-complex').classList.toggle('on',t==='complex');
+  updPD();
+}
+function setSize(r){
+  posSize=r;
+  var chips=document.querySelectorAll('.size-chip');
+  for(var i=0;i<chips.length;i++) chips[i].classList.toggle('on',chips[i].textContent.trim()===r+' cm');
+  updPD();
+}
+function chQty(d){
+  posQty=Math.max(1,Math.min(99,posQty+d));
+  document.getElementById('pos-qty').textContent=posQty;
+  updPD();
+}
+function updPD(){
+  var pp=getPP(posType,posSize),tot=pp*posQty;
+  document.getElementById('pd-thb').textContent=baht(tot);
+  document.getElementById('pd-lak').textContent=lak(toLak(tot));
+  document.getElementById('pd-per').textContent=baht(pp)+' / ຊ';
+}
+
+function addToCart(){
+  var pp=getPP(posType,posSize),sub=pp*posQty;
+  cart.push({type:posType,size:posSize,qty:posQty,pp:pp,sub:sub});
+  // Reset qty to 1 for next item
+  posQty=1;document.getElementById('pos-qty').textContent='1';updPD();
+  renderCart();
+}
+
+function removeFromCart(i){
+  cart.splice(i,1);
+  itemForms.splice(i,1);
+  renderCart();
+}
+
+function renderCart(){
+  var sec=document.getElementById('cart-section');
+  var hint=document.getElementById('pos-hint');
+  if(!cart.length){
+    if(sec)sec.style.display='none';
+    if(hint)hint.style.display='block';
+    return;
+  }
+  if(sec)sec.style.display='block';
+  if(hint)hint.style.display='none';
+
+  var list=document.getElementById('cart-items-list');
+  if(list) list.innerHTML=cart.map(function(it,i){
+    var typeLabel=it.type==='complex'?'🎨 Complex':'✍️ Simple';
+    return'<div class="cart-item">'+
+      '<div class="ci-info">'+
+        '<div class="ci-type">'+typeLabel+' · '+it.size+' cm · ×'+it.qty+'</div>'+
+        '<div class="ci-price">'+baht(it.sub)+'  <span style="opacity:.6;font-size:.7em">'+lak(toLak(it.sub))+'</span></div>'+
+      '</div>'+
+      '<button class="ci-del" onclick="removeFromCart('+i+')">✕</button>'+
+    '</div>';
+  }).join('');
+
+  var cartTot=cart.reduce(function(s,it){return s+it.sub;},0);
+  document.getElementById('ct-thb').textContent=baht(cartTot);
+  document.getElementById('ct-lak').textContent=lak(toLak(cartTot));
+}
+
+function goToOrderForm(){
+  if(!cart.length){alert('ກະລຸນາເພີ່ມລາຍການກ່ອນ');return;}
+  buildOrderItems();
+  updOrderTotal();
+  updSchedule();
+  goPage('order');
+}
+
+// ─────────────────────────────────────────────────
+// ORDER FORM
+// ─────────────────────────────────────────────────
+function buildOrderItems(){
+  var ic=document.getElementById('order-items');if(!ic)return;
+  ic.innerHTML=cart.map(function(it,i){
+    var saved=itemForms[i]||{};
+    var typeLabel=it.type==='complex'?'🎨 Complex':'✍️ Simple';
+    return'<div class="item-sec">'+
+      '<div class="item-sec-hd">'+
+        '<span>ລາຍການ '+(i+1)+': '+typeLabel+' · '+it.size+' cm · ×'+it.qty+'</span>'+
+        '<span class="item-sec-price">'+baht(it.sub)+'</span>'+
+      '</div>'+
+      '<div class="field"><label>ລາຍລະອຽດ <span class="req">*</span></label>'+
+        '<textarea id="fi-det-'+i+'" placeholder="ຂໍ້ຄວາມ / ໂລໂກ້ ທີ່ຕ້ອງການປັກ...">'+esc(saved.det||'')+'</textarea>'+
+        '<div class="hint">⚠ ກວດຄໍາສະກົດ — ປັກຕາມທີ່ຂຽນ</div></div>'+
+      '<div class="two">'+
+        '<div class="field"><label>ຟອນ</label><input type="text" id="fi-fnt-'+i+'" placeholder="Script, Block..." value="'+esc(saved.font||'')+'"></div>'+
+        '<div class="field"><label>ສີດ້າຍ</label><input type="text" id="fi-thr-'+i+'" placeholder="ຂາວ, ທອງ..." value="'+esc(saved.thread||'')+'"></div>'+
+      '</div>'+
+      '<div class="field"><label>ຕໍາແໜ່ງ</label><input type="text" id="fi-pos-'+i+'" placeholder="ກາງໜ້າ, ຊ້າຍ..." value="'+esc(saved.pos||'')+'"></div>'+
+    '</div>';
+  }).join('');
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+function saveItemForms(){
+  for(var i=0;i<cart.length;i++){
+    itemForms[i]={
+      det:(document.getElementById('fi-det-'+i)||{value:''}).value,
+      font:(document.getElementById('fi-fnt-'+i)||{value:''}).value,
+      thread:(document.getElementById('fi-thr-'+i)||{value:''}).value,
+      pos:(document.getElementById('fi-pos-'+i)||{value:''}).value,
+    };
+  }
+}
+
+function updOrderTotal(){
+  var base=cart.reduce(function(s,it){return s+it.sub;},0);
+  var tot=base+(isRush?RUSH_FEE:0);
+  document.getElementById('otb-thb').textContent=baht(tot);
+  document.getElementById('otb-lak').textContent=lak(toLak(tot));
+  var rr=document.getElementById('otb-rush');
+  if(rr)rr.style.display=isRush?'block':'none';
+}
+
+function updSchedule(){
+  var qd=nextAvailSlot(isRush);
+  _previewQueueDate=qd;
+  var qdEl=document.getElementById('sch-queue-date');
+  if(qdEl)qdEl.textContent=fdate(qd);
+  // Auto pickup = queueDate + 7 working days
+  var pu=addWorkDays(qd,7);
+  var puEl=document.getElementById('f-pickup');
+  if(puEl&&!puEl.value)puEl.value=pu; // only auto-fill if empty
+  else if(puEl&&isRush)puEl.value=pu; // recalc on rush toggle
+  updSchHint();
+}
+
+function updSchHint(){
+  var puEl=document.getElementById('f-pickup');
+  var hint=document.getElementById('sch-pickup-hint');
+  if(!puEl||!hint)return;
+  var pu=puEl.value;
+  if(!pu){hint.textContent='7 ວັນທໍາການ · ປ່ຽນໄດ້';return;}
+  var qd=_previewQueueDate||tday();
+  var wdl=workDaysLeft(qd,pu);
+  hint.textContent=wdl+' ວັນທໍາການ ຈາກວັນເຂົ້າຄິວ · ປ່ຽນໄດ້';
+}
+
+function togRush(){
+  isRush=!isRush;
+  var box=document.getElementById('rush-box');if(box)box.classList.toggle('on',isRush);
+  var pill=document.getElementById('rush-pill');if(pill)pill.textContent=isRush?'⚡ ເປີດ':'ປິດ';
+  // Reset pickup date so it recalculates
+  var puEl=document.getElementById('f-pickup');if(puEl)puEl.value='';
+  updOrderTotal();
+  updSchedule();
+}
+
+function setCur(c){
+  payCurrency=c;
+  document.getElementById('cur-thb').classList.toggle('on',c==='THB');
+  document.getElementById('cur-lak').classList.toggle('on',c==='LAK');
+}
+
+// ─────────────────────────────────────────────────
+// SUBMIT ORDER
+// ─────────────────────────────────────────────────
+function doSubmit(mode){
+  var nm=(document.getElementById('f-name')||{value:''}).value.trim();
+  if(!nm){alert('ກະລຸນາໃສ່ຊື່ລູກຄ້າ');return;}
+  var pu=(document.getElementById('f-pickup')||{value:''}).value;
+  if(!pu){alert('ກະລຸນາໃສ່ວັນທີ່ຮັບສິນຄ້າ');return;}
+  if(!cart.length){alert('ກະລຸນາເພີ່ມລາຍການໃນ POS ກ່ອນ');return;}
+
+  // Validate & collect item details
+  var items=[];
+  for(var i=0;i<cart.length;i++){
+    var det=(document.getElementById('fi-det-'+i)||{value:''}).value.trim();
+    if(!det){alert('ລາຍການ '+(i+1)+': ກະລຸນາໃສ່ລາຍລະອຽດການປັກ');return;}
+    items.push({
+      designType:cart[i].type==='complex'?'Complex':'Simple',
+      sizeCm:cart[i].size,
+      quantity:cart[i].qty,
+      pricePerPiece:cart[i].pp,
+      subtotalTHB:cart[i].sub,
+      embroideryDetails:det,
+      font:(document.getElementById('fi-fnt-'+i)||{value:''}).value.trim(),
+      thread:(document.getElementById('fi-thr-'+i)||{value:''}).value.trim(),
+      position:(document.getElementById('fi-pos-'+i)||{value:''}).value.trim(),
+    });
+  }
+
+  // Assign real queue date now
+  var qd=nextAvailSlot(isRush);
+  var base=cart.reduce(function(s,it){return s+it.sub;},0);
+  var tot=base+(isRush?RUSH_FEE:0);
+  var totalPcs=items.reduce(function(s,it){return s+it.quantity;},0);
+  var label=items[0].designType+' ('+items[0].sizeCm+' cm)'+(items.length>1?' +'+( items.length-1)+' ລາຍການ':'');
+
+  var o={
+    id:newId(), createdAt:new Date().toISOString(), status:'new',
+    clientName:nm,
+    contactNumber:(document.getElementById('f-phone')||{value:''}).value.trim(),
+    queueDate:qd,
+    pickupDate:pu,
+    deliveryDate:qd,  // compat: queue card groups by this
+    isRush:isRush,
+    rushFee:isRush?RUSH_FEE:0,
+    items:items,
+    pieces:totalPcs,
+    serviceName:label,
+    wording:items[0].embroideryDetails,
+    designType:items[0].designType,
+    sizeCm:items[0].sizeCm,
+    pricePerPiece:items[0].pricePerPiece,
+    totalTHB:tot,
+    total:tot,
+    payStatus:'unpaid',
+    partialAmountTHB:0,
+    payCurrency:payCurrency,
+    fullyPaid:false, depositPaid:false,
+  };
+
+  var all=loadO();all.unshift(o);saveO(all);
+
+  if(mode==='new'){
+    // Clear cart and item forms, reset form for next order
+    cart=[];itemForms=[];isRush=false;payCurrency='THB';
+    var rb=document.getElementById('rush-box');if(rb)rb.classList.remove('on');
+    var rp=document.getElementById('rush-pill');if(rp)rp.textContent='ປິດ';
+    document.getElementById('cur-thb').classList.add('on');
+    document.getElementById('cur-lak').classList.remove('on');
+    // Clear customer info and pickup date
+    ['f-name','f-phone'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+    var puEl=document.getElementById('f-pickup');if(puEl)puEl.value='';
+    // Reset order items section
+    var oi=document.getElementById('order-items');if(oi)oi.innerHTML='';
+    renderCart();
+    updOrderTotal();
+    updSchedule();
+    // Show confirmation briefly
+    var qdEl=document.getElementById('sch-queue-date');
+    if(qdEl)qdEl.textContent='—';
+    // Stay on order form, show empty state
+    var ph=document.getElementById('pos-hint');if(ph)ph.style.display='block';
+    // Tell user and send to POS to add new items
+    alert('✓ ບັນທຶກແລ້ວ! ເລືອກລາຍການໃໝ່ໄດ້ເລີຍ');
+    goPage('pos');
+  } else {
+    // Clear everything and go to queue
+    cart=[];itemForms=[];isRush=false;payCurrency='THB';
+    var rb=document.getElementById('rush-box');if(rb)rb.classList.remove('on');
+    var rp=document.getElementById('rush-pill');if(rp)rp.textContent='ປິດ';
+    document.getElementById('cur-thb').classList.add('on');
+    document.getElementById('cur-lak').classList.remove('on');
+    ['f-name','f-phone'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+    var puEl=document.getElementById('f-pickup');if(puEl)puEl.value='';
+    var oi=document.getElementById('order-items');if(oi)oi.innerHTML='';
+    renderCart();
+    goPage('queue');
+  }
+}
+
+// ─────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────
+function goPage(pg){
+  // Save item form data when leaving order form
+  if(curPage==='order') saveItemForms();
+
+  var pgs=document.querySelectorAll('.page');
+  for(var i=0;i<pgs.length;i++) pgs[i].classList.remove('on');
+  var bns=document.querySelectorAll('.bn');
+  for(var i=0;i<bns.length;i++) bns[i].classList.remove('on');
+  var pe=document.getElementById('page-'+pg);
+  var be=document.getElementById('bn-'+pg);
+  if(pe)pe.classList.add('on');if(be)be.classList.add('on');
+  var ct=document.getElementById('content');if(ct)ct.scrollTop=0;
+
+  var titles={pos:'AMOR ✶',order:'ຟອມຄໍາສັ່ງ',queue:'ຄິວ',dashboard:'Dashboard'};
+  var subs={pos:'ເລືອກການປັກ',order:'ຂໍ້ມູນລູກຄ້າ',queue:'Queue Management',dashboard:'ສະຫລຸບ'};
+  var tt=document.getElementById('tb-title');if(tt)tt.textContent=titles[pg]||'AMOR';
+  var ts=document.getElementById('tb-sub');if(ts)ts.textContent=subs[pg]||'';
+  var tb=document.getElementById('tb-back');if(tb)tb.style.display=pg==='order'?'inline-block':'none';
+  var tn=document.getElementById('tb-new');if(tn)tn.style.display=pg==='queue'?'inline-block':'none';
+  prevPage=curPage;curPage=pg;
+  if(pg==='queue')renderQ();
+  if(pg==='dashboard')renderD();
+
+  // When navigating TO order form, rebuild items from current cart
+  if(pg==='order'){
+    buildOrderItems();
+    updOrderTotal();
+    updSchedule();
+  }
+}
+function goBack(){goPage(prevPage&&prevPage!==curPage?prevPage:'pos');}
+
+// ─────────────────────────────────────────────────
+// QUEUE
+// ─────────────────────────────────────────────────
+function getWkDays(){
+  var days=[],now=new Date();
+  now.setDate(now.getDate()+wkOff*7);
+  var dow=now.getDay(),mon=new Date(now);
+  mon.setDate(mon.getDate()-(dow===0?6:dow-1));
+  for(var i=0;i<7;i++){var d=new Date(mon);d.setDate(mon.getDate()+i);days.push(d.toISOString().split('T')[0]);}
+  return days;
+}
+
+function renderQ(){
+  var ord=loadO(),wd=getWkDays();
+  try{
+    var wl=document.getElementById('wk-lbl');
+    if(wl){
+      var s=new Date(wd[0]+'T12:00:00'),e=new Date(wd[6]+'T12:00:00');
+      wl.textContent=s.toLocaleDateString('lo-LA',{day:'numeric',month:'short'})+
+        ' – '+e.toLocaleDateString('lo-LA',{day:'numeric',month:'short'});
+    }
+  }catch(ex){}
+
+  // Stats for this week's queueDate
+  var wo=ord.filter(function(o){return wd.indexOf(o.queueDate||o.deliveryDate)!==-1;});
+  var qs=document.getElementById('q-stats');
+  if(qs)qs.innerHTML=
+    '<div class="qs-box"><span class="qs-n">'+wo.filter(function(o){return o.status==='new';}).length+'</span><span class="qs-l">ໃໝ່</span></div>'+
+    '<div class="qs-box"><span class="qs-n">'+wo.filter(function(o){return o.status==='in-progress';}).length+'</span><span class="qs-l">ດໍາເນີນ</span></div>'+
+    '<div class="qs-box"><span class="qs-n">'+wo.filter(function(o){return o.status==='done';}).length+'</span><span class="qs-l">ສໍາເລັດ</span></div>'+
+    '<div class="qs-box"><span class="qs-n" style="color:var(--red)">'+
+      wo.filter(function(o){var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');return ps==='unpaid';}).length+
+    '</span><span class="qs-l">ຄ້າງ฿</span></div>';
+
+  var ct=document.getElementById('q-days');if(!ct)return;ct.innerHTML='';
+
+  for(var wi=0;wi<wd.length;wi++){
+    var ds=wd[wi],d;
+    try{d=new Date(ds+'T12:00:00');}catch(ex){continue;}
+    var isT=ds===tday();
+    // Group by queueDate
+    var do2=ord.filter(function(o){return(o.queueDate||o.deliveryDate)===ds;});
+    do2.sort(function(a,b){
+      if(a.isRush&&!b.isRush)return-1;if(!a.isRush&&b.isRush)return 1;
+      return new Date(a.createdAt)-new Date(b.createdAt);
+    });
+    var hc=isT?'dh-t':'';
+    var dstr=d.getDate()+' '+d.toLocaleDateString('lo-LA',{month:'short'});
+    var sec=document.createElement('div');sec.className='day-section';
+    sec.innerHTML=
+      '<div class="day-head '+hc+'">'+
+        '<span class="dh-name">'+DAYS[d.getDay()]+(isT?' · ວັນນີ້':'')+'</span>'+
+        '<span class="dh-date">'+dstr+'</span>'+
+        '<span class="dh-slots">'+do2.length+'</span>'+
+      '</div>'+
+      '<div class="day-body">'+(do2.length?do2.map(function(o,i){return qCard(o,i);}).join(''):'<div class="day-empty">ຫວ່າງ</div>')+'</div>';
+    ct.appendChild(sec);
+  }
+}
+
+function daysLeftBadge(pickupDate){
+  if(!pickupDate)return'';
+  var d=calDaysLeft(pickupDate);
+  var cls,txt;
+  if(d<0){cls='dl-due';txt='ກາຍກຳນົດ';}
+  else if(d===0){cls='dl-due';txt='ມື້ນີ້!';}
+  else if(d<=2){cls='dl-urgent';txt=d+' ວັນ';}
+  else if(d<=5){cls='dl-warn';txt=d+' ວັນ';}
+  else{cls='dl-ok';txt=d+' ວັນ';}
+  return'<span class="days-left '+cls+'">📅 '+txt+'</span>';
+}
+
+function qCard(o,i){
+  var bt='';
+  if(o.status==='new') bt='<button class="qc-btn go" onclick="event.stopPropagation();mvS(\''+o.id+'\',\'in-progress\')">▶ ເລີ່ມ</button>';
+  else if(o.status==='in-progress') bt='<button class="qc-btn done" onclick="event.stopPropagation();mvS(\''+o.id+'\',\'done\')">✓ ສໍາເລັດ</button>';
+  else bt='<button class="qc-btn" onclick="event.stopPropagation();mvS(\''+o.id+'\',\'new\')">↩</button>';
+  var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
+  var payDot=ps==='paid'?'<span style="font-size:.62rem;color:var(--green)">● ຊໍາລະຄົບ</span>':
+             ps==='partial'?'<span style="font-size:.62rem;color:var(--amber)">● ຮັບບາງ</span>':
+             '<span style="font-size:.62rem;color:var(--red)">● ຄ້າງ</span>';
+  var tot=o.totalTHB||o.total||0;
+  var itemLabel='';
+  if(o.items&&o.items.length>0){
+    itemLabel=o.items.map(function(it){return it.designType+' '+it.sizeCm+'cm ×'+it.quantity;}).join(' · ');
+  } else { itemLabel=o.serviceName||'—'; }
+  var detLabel=o.items&&o.items[0]?o.items[0].embroideryDetails:o.wording||'';
+  return'<div class="q-card s-'+(o.isRush?'rush':o.status)+'" onclick="openQM(\''+o.id+'\')">'+(i===0&&o.status!=='done'?'<div class="next-lbl">NEXT</div>':'')+
+    '<div class="qc-top"><span class="qc-id">#'+o.id+'</span>'+(o.isRush?'<span class="rush-badge">⚡ RUSH</span>':'')+
+      '<span class="qc-seq" style="margin-left:auto">'+(i+1)+'</span></div>'+
+    '<div class="qc-name">'+o.clientName+'</div>'+
+    '<div class="qc-svc">'+itemLabel+'</div>'+
+    '<div class="qc-det">'+(detLabel?'"'+detLabel+'"':'')+'</div>'+
+    '<div class="qc-foot">'+
+      '<div style="display:flex;align-items:center;gap:6px">'+bt+payDot+'</div>'+
+      '<div class="qc-right">'+
+        '<div class="qc-total">'+baht(tot)+'</div>'+
+        daysLeftBadge(o.pickupDate||o.deliveryDate)+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function mvS(id,st){
+  var a=loadO();for(var i=0;i<a.length;i++){if(a[i].id===id){a[i].status=st;break;}}
+  saveO(a);renderQ();
+}
+function shiftW(d){wkOff+=d;renderQ();}
+function wkToday(){wkOff=0;renderQ();}
+
+// ─────────────────────────────────────────────────
+// QUEUE MODAL
+// ─────────────────────────────────────────────────
+function openQM(id){
+  var a=loadO(),o=null;
+  for(var i=0;i<a.length;i++){if(a[i].id===id){o=a[i];break;}}
+  if(!o)return;
+  var qt=document.getElementById('qm-title');if(qt)qt.textContent='#'+o.id+(o.isRush?' ⚡':'');
+  var tot=o.totalTHB||o.total||0;
+
+  // Build items HTML
+  var itemsHtml='';
+  if(o.items&&o.items.length>0){
+    itemsHtml=o.items.map(function(it,i){
+      return'<div style="background:var(--card);border-radius:8px;padding:8px 10px;margin:4px 0">'+
+        '<div style="font-size:.72rem;font-weight:700;margin-bottom:3px">'+(i+1)+'. '+it.designType+' · '+it.sizeCm+' cm · ×'+it.quantity+' = '+baht(it.subtotalTHB)+'</div>'+
+        (it.embroideryDetails?mr('"ລາຍລະ"','"'+it.embroideryDetails+'"'):'')+
+        (it.font?mr('ຟອນ',it.font):'')+
+        (it.thread?mr('ສີດ້າຍ',it.thread):'')+
+        (it.position?mr('ຕໍາແໜ່ງ',it.position):'')+
+      '</div>';
+    }).join('');
+  } else {
+    itemsHtml=mr('ດີໄຊ',o.serviceName||'—')+mr('ລາຍລະ','"'+(o.wording||'—')+'"');
+  }
+
+  var qb=document.getElementById('qm-body');
+  if(qb)qb.innerHTML=
+    mr('ລູກຄ້າ',o.clientName)+
+    mr('ເບີ',o.contactNumber||'—')+
+    mr('ເຂົ້າຄິວ',fdate(o.queueDate||o.deliveryDate))+
+    mr('ຮັບສິນຄ້າ',fdate(o.pickupDate||o.deliveryDate))+
+    mr('ເຫຼືອ',daysLeftBadge(o.pickupDate||o.deliveryDate)||'—')+
+    itemsHtml+
+    (o.isRush?mr('ຄ່າດ່ວນ',baht(o.rushFee||RUSH_FEE)):'')+
+    mr('ລາຄາ',baht(tot)+' · '+lak(toLak(tot)))+
+    mr('ສະກຸນ',o.payCurrency||'THB')+
+    paySection(o,id);
+
+  var bb=document.getElementById('qm-btns');
+  if(bb){
+    bb.innerHTML='';
+    var mk=function(cl,tx,fn){var b=document.createElement('button');b.className='mbtn '+cl;b.textContent=tx;b.onclick=fn;bb.appendChild(b);};
+    if(o.status!=='in-progress') mk('mb-prog','▶ ເລີ່ມ',function(){mvS(id,'in-progress');closeQM();});
+    if(o.status!=='done')        mk('mb-done','✓ ສໍາເລັດ',function(){mvS(id,'done');closeQM();});
+    if(o.status!=='new')         mk('mb-undo','↩ ຄືນ',function(){mvS(id,'new');closeQM();});
+    mk('mb-del','🗑 ລຶບ',function(){if(confirm('ລຶບ #'+id+'?')){saveO(loadO().filter(function(x){return x.id!==id;}));closeQM();renderQ();}});
+    mk('mb-rcpt','🧾 ໃບ',function(){closeQM();showR(id);});
+  }
+  var m=document.getElementById('q-modal');if(m)m.classList.add('on');
+}
+
+function paySection(o,id){
+  var tot=o.totalTHB||o.total||0;
+  var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
+  var html='<div style="background:var(--card);border-radius:10px;padding:10px 12px;margin-top:10px;border:1.5px solid var(--border)">';
+  html+='<div class="pay-sub-hd">ການຊໍາລະ</div>';
+  if(ps==='paid'){
+    html+=mr('ສະຖານະ','<span style="color:var(--green);font-weight:700">✓ ຊໍາລະຄົບ</span>');
+    html+=mr('ຈໍານວນ',baht(tot));
+    html+='<button class="pbtn pbtn-undo" style="width:100%;margin-top:8px;height:36px;border-radius:8px" onclick="setPay(\''+id+'\',\'unpaid\',0);closeQM()">↩ ຍົກເລີກ</button>';
+  } else if(ps==='partial'){
+    var pa=o.partialAmountTHB||0;
+    html+=mr('ຮັບແລ້ວ','<span style="color:var(--amber);font-weight:700">'+baht(pa)+'</span>');
+    html+=mr('ຍັງຄ້າງ','<span style="color:var(--red);font-weight:800">'+baht(tot-pa)+'</span>');
+    html+='<div style="display:flex;gap:6px;margin-top:8px">'+
+      '<button class="pbtn pbtn-full" style="flex:1;height:36px;border-radius:8px" onclick="setPay(\''+id+'\',\'paid\',0);closeQM()">✓ ຮັບທີ່ເຫຼືອ '+baht(tot-pa)+'</button>'+
+      '<button class="pbtn pbtn-undo" style="height:36px;border-radius:8px" onclick="setPay(\''+id+'\',\'unpaid\',0);closeQM()">↩</button>'+
+    '</div>';
+  } else {
+    html+=mr('ສະຖານະ','<span style="color:var(--red)">ຍັງບໍ່ໄດ້ຮັບ</span>');
+    html+=mr('ລາຄາ',baht(tot)+' ('+lak(toLak(tot))+')');
+    html+='<div style="font-size:.67rem;color:var(--muted);margin:8px 0 4px">ຮັບບາງສ່ວນ — ໃສ່ຈໍານວນ ฿:</div>';
+    html+='<input class="pay-partial-input" type="number" id="pa-'+id+'" placeholder="ຕ.ຢ: 50">';
+    html+='<div style="display:flex;gap:6px;margin-top:8px">'+
+      '<button class="pbtn pbtn-dep" style="flex:1;height:36px;border-radius:8px" onclick="doPartial(\''+id+'\')">✓ ຮັບບາງສ່ວນ</button>'+
+      '<button class="pbtn pbtn-full" style="flex:1;height:36px;border-radius:8px" onclick="setPay(\''+id+'\',\'paid\',0);closeQM()">✓ ຄົບ '+baht(tot)+'</button>'+
+    '</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function doPartial(id){
+  var inp=document.getElementById('pa-'+id);
+  var amt=parseFloat(inp?inp.value:0)||0;
+  if(amt<=0){alert('ກະລຸນາໃສ່ຈໍານວນ');return;}
+  setPay(id,'partial',amt);closeQM();
+}
+function setPay(id,status,partialAmt){
+  var a=loadO();
+  for(var i=0;i<a.length;i++){
+    if(a[i].id===id){
+      a[i].payStatus=status;a[i].partialAmountTHB=partialAmt||0;
+      a[i].fullyPaid=(status==='paid');a[i].depositPaid=(status!=='unpaid');break;
+    }
+  }
+  saveO(a);if(curPage==='dashboard')renderD();if(curPage==='queue')renderQ();
+}
+
+function mr(l,v){return'<div class="m-row"><span class="m-lbl">'+l+'</span><span class="m-val">'+v+'</span></div>';}
+function closeQM(){var m=document.getElementById('q-modal');if(m)m.classList.remove('on');}
+
+// ─────────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────────
+function filtO(a){
+  var t=tday(),now=new Date(),dow=now.getDay();
+  var mon=new Date(now);mon.setDate(now.getDate()-(dow===0?6:dow-1));
+  var ws=mon.toISOString().split('T')[0],mo=now.toISOString().substring(0,7);
+  if(dbFilt==='today')return a.filter(function(o){var qd=o.queueDate||o.deliveryDate||'';return qd===t||(o.createdAt&&o.createdAt.startsWith(t));});
+  if(dbFilt==='week') return a.filter(function(o){var qd=o.queueDate||o.deliveryDate||'';return qd>=ws;});
+  if(dbFilt==='month')return a.filter(function(o){var qd=o.queueDate||o.deliveryDate||'';return qd.startsWith(mo)||(o.createdAt&&o.createdAt.startsWith(mo));});
+  return a;
+}
+function setFilt(f,btn){dbFilt=f;var bs=document.querySelectorAll('.fp-btn');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');if(btn)btn.classList.add('on');renderD();}
+
+function renderD(){
+  var all=loadO(),ord=filtO(all);
+  var sorted=ord.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  var totalPcs=0,dn=0,totalCol=0,totalOut=0;
+  for(var i=0;i<ord.length;i++){
+    totalPcs+=(ord[i].pieces||0);if(ord[i].status==='done')dn++;
+    var tot=ord[i].totalTHB||ord[i].total||0;
+    var ps=ord[i].payStatus||(ord[i].fullyPaid?'paid':'unpaid');
+    if(ps==='paid'){totalCol+=tot;}
+    else if(ps==='partial'){totalCol+=(ord[i].partialAmountTHB||0);totalOut+=tot-(ord[i].partialAmountTHB||0);}
+    else{totalOut+=tot;}
+  }
+  var ds=document.getElementById('db-stats');
+  if(ds)ds.innerHTML=
+    '<div class="st-card"><span class="st-n">'+ord.length+'</span><span class="st-l">ຄໍາສັ່ງ</span></div>'+
+    '<div class="st-card"><span class="st-n">'+totalPcs+'</span><span class="st-l">ຊິ້ນ</span></div>'+
+    '<div class="st-card"><span class="st-n" style="color:var(--green)">'+dn+'</span><span class="st-l">ສໍາເລັດ</span></div>'+
+    '<div class="st-card"><span class="st-n" style="font-size:.88rem">'+baht(totalCol+totalOut)+'</span><span class="st-l">ມູນຄ່າ</span></div>';
+
+  var strip='<div class="pay-strip">'+
+    '<div class="pay-half"><span class="ph-lbl">ໄດ້ຮັບ</span><span class="ph-val ph-col">'+baht(totalCol)+'</span><span class="ph-sub">'+lak(toLak(totalCol))+'</span></div>'+
+    '<div class="pay-half"><span class="ph-lbl">ຄ້າງຮັບ</span><span class="ph-val ph-out">'+baht(totalOut)+'</span><span class="ph-sub">'+lak(toLak(totalOut))+'</span></div>'+
+    '</div>';
+
+  var lm={today:'ວັນນີ້',week:'ອາທິດ',month:'ເດືອນ',all:'ທັງໝົດ'};
+  var dl=document.getElementById('db-lbl');if(dl)dl.textContent=(lm[dbFilt]||'ຄໍາສັ່ງ')+' ('+sorted.length+')';
+  var lst=document.getElementById('db-list');if(!lst)return;
+  if(!sorted.length){lst.innerHTML=strip+'<div class="empty"><div class="ei">📋</div><div style="font-size:.85rem">ຍັງບໍ່ມີ</div></div>';return;}
+
+  var sc={new:'p-new','in-progress':'p-prog',done:'p-done'};
+  var sx={new:'ໃໝ່','in-progress':'ດໍາເນີນ',done:'ສໍາເລັດ'};
+  lst.innerHTML=strip+sorted.map(function(o){
+    var tot=o.totalTHB||o.total||0;
+    var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
+    var payBadge='',payActs='';
+    if(ps==='paid'){
+      payBadge='<span class="pill-pay pp-full">✓ ຊໍາລະຄົບ</span>';
+      payActs='<button class="pbtn pbtn-undo" onclick="event.stopPropagation();setPay(\''+o.id+'\',\'unpaid\',0)">↩</button>';
+    } else if(ps==='partial'){
+      var pa=o.partialAmountTHB||0;
+      payBadge='<span class="pill-pay pp-dep">ຄ້າງ '+baht(tot-pa)+'</span>';
+      payActs='<button class="pbtn pbtn-full" onclick="event.stopPropagation();setPay(\''+o.id+'\',\'paid\',0)">✓ ຮັບທີ່ເຫຼືອ</button>'+
+              '<button class="pbtn pbtn-undo" onclick="event.stopPropagation();setPay(\''+o.id+'\',\'unpaid\',0)">↩</button>';
+    } else {
+      payBadge='<span class="pill-pay pp-none">ຍັງບໍ່ໄດ້ຮັບ</span>';
+      payActs='<button class="pbtn pbtn-full" onclick="event.stopPropagation();setPay(\''+o.id+'\',\'paid\',0)">✓ ຮັບຄົບ</button>';
+    }
+    var itemLine=o.items&&o.items.length?o.items.map(function(it){return it.designType+' '+it.sizeCm+'cm';}).join(', '):o.serviceName||'';
+    return'<div class="ord-row">'+
+      '<div style="display:flex;align-items:flex-start;gap:10px">'+
+        '<div style="flex:1;min-width:0">'+
+          '<div class="or-id">#'+o.id+(o.isRush?' ⚡':'')+' · ຮັບ '+fdateShort(o.pickupDate||o.deliveryDate)+daysLeftBadge(o.pickupDate||o.deliveryDate)+'</div>'+
+          '<div class="or-name">'+o.clientName+'</div>'+
+          '<div class="or-det">'+itemLine+'</div>'+
+          '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">'+
+            '<span class="pill '+(sc[o.status]||'p-new')+'">'+(sx[o.status]||'ໃໝ່')+'</span>'+payBadge+
+          '</div>'+
+        '</div>'+
+        '<div style="text-align:right;flex-shrink:0">'+
+          '<div class="or-total">'+baht(tot)+'</div>'+
+          '<div class="or-lak">'+lak(toLak(tot))+'</div>'+
+          '<button class="or-btn" onclick="showR(\''+o.id+'\')">🧾 ໃບ</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="border-top:1px solid var(--border);padding-top:7px;margin-top:8px">'+
+        '<div class="pay-actions">'+payActs+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────
+// RECEIPT
+// ─────────────────────────────────────────────────
+function showR(id){
+  var a=loadO(),o=null;
+  for(var i=0;i<a.length;i++){if(a[i].id===id){o=a[i];break;}}
+  if(!o)return;
+  var tot=o.totalTHB||o.total||0;
+  var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
+  var cd=o.createdAt?o.createdAt.split('T')[0]:tday();
+
+  var payRow='';
+  if(ps==='paid'){
+    payRow='<div class="rt-row" style="color:var(--green)"><span>✓ ຊໍາລະຄົບ</span><span>'+baht(tot)+'</span></div>';
+  } else if(ps==='partial'){
+    var pa=o.partialAmountTHB||0;
+    payRow='<div class="rt-row"><span>ຮັບແລ້ວ</span><span style="color:var(--amber);font-weight:700">'+baht(pa)+'</span></div>'+
+           '<div class="rt-row"><span>ຍັງຄ້າງ</span><span class="rt-due">'+baht(tot-pa)+'</span></div>';
+  } else {
+    payRow='<div class="rt-row"><span>ສະຖານະ</span><span class="rt-due">ຍັງບໍ່ໄດ້ຮັບ</span></div>';
+  }
+
+  var itemsHtml='';
+  if(o.items&&o.items.length){
+    itemsHtml=o.items.map(function(it){
+      var det=[];
+      if(it.embroideryDetails)det.push('"'+it.embroideryDetails+'"');
+      if(it.font)det.push('Font:'+it.font);
+      if(it.thread)det.push(it.thread);
+      if(it.position)det.push(it.position);
+      return'<div class="rbi">'+
+        '<div class="rbi-top"><span class="rbi-svc">'+it.designType+' · '+it.sizeCm+' cm</span><span>×'+it.quantity+'</span></div>'+
+        (det.length?'<div class="rbi-det">'+det.join(' · ')+'</div>':'')+
+      '</div>';
+    }).join('');
+  } else {
+    itemsHtml='<div class="rbi"><div class="rbi-top"><span class="rbi-svc">'+o.serviceName+'</span><span>×'+(o.pieces||1)+'</span></div>'+
+      (o.wording?'<div class="rbi-det">"'+o.wording+'"</div>':'')+
+    '</div>';
+  }
+
+  var lineItems='';
+  if(o.items&&o.items.length){
+    lineItems=o.items.map(function(it){
+      return'<div class="rt-row"><span>'+it.designType+' '+it.sizeCm+'cm ×'+it.quantity+'</span><span>'+baht(it.subtotalTHB)+'</span></div>';
+    }).join('');
+  } else {
+    lineItems='<div class="rt-row"><span>'+o.serviceName+'</span><span>'+baht(o.total)+'</span></div>';
+  }
+
+  var html='<div class="receipt">'+
+    '<div class="r-head">'+
+      '<div><div class="r-head-name">AMOR Embroidery</div><div class="r-head-sub">ໃບຮັບເງິນ · Receipt</div></div>'+
+      '<div class="r-head-id">#'+o.id+(o.isRush?' ⚡':'')+'</div>'+
+    '</div>'+
+    '<div>'+
+    '<div class="rb-info">'+
+      rg('ລູກຄ້າ',o.clientName)+rg('ຮັບ',fdateShort(o.pickupDate||o.deliveryDate))+
+      (o.contactNumber?rg('ເບີ',o.contactNumber):rg('',''))+rg('ວັນທີ',fdateShort(cd))+
+    '</div>'+
+    '<div class="rb-items">'+itemsHtml+'</div>'+
+    '<div class="r-total">'+
+      lineItems+
+      (o.isRush?'<div class="rt-row"><span>⚡ ຄ່າດ່ວນ</span><span>'+baht(o.rushFee||RUSH_FEE)+'</span></div>':'')+
+      '<div class="rt-row grand"><span>ລວມ</span>'+
+        '<span>'+baht(tot)+'<br><small style="font-weight:400;color:var(--muted);font-size:.8em">'+lak(toLak(tot))+'</small></span>'+
+      '</div>'+payRow+
+    '</div>'+
+    '<div class="r-foot"><div class="r-thank">ຂອບໃຈ · ขอบคุณ · Thank you 🙏</div><div class="r-tag">AMOR Embroidery</div></div>'+
+    '</div></div>';
+
+  var pz=document.getElementById('pzone');if(pz)pz.innerHTML=html;
+  var rm=document.getElementById('r-modal');if(rm)rm.classList.add('on');
+}
+
+function rg(l,v){return'<div><span class="rg-lbl">'+l+'</span><span class="rg-val">'+(v||'')+'</span></div>';}
+function closeRM(){var m=document.getElementById('r-modal');if(m)m.classList.remove('on');}
+
+// ─────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────
+document.getElementById('q-modal').addEventListener('click',function(e){if(e.target===this)closeQM();});
+document.getElementById('r-modal').addEventListener('click',function(e){if(e.target===this)closeRM();});
+document.getElementById('cfg-modal').addEventListener('click',function(e){if(e.target===this)closeCfg();});
+
+buildPOS();
+goPage('pos');
+</script>
+</body>
+</html>
