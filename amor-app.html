@@ -330,6 +330,32 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
 .empty{text-align:center;padding:40px 20px;color:var(--muted);}
 .ei{font-size:2.5rem;margin-bottom:10px;}
 .p-void{background:#f0f0f0;color:#999;}
+.disc-section{margin:0 14px 10px;padding:10px 12px;background:var(--card);
+  border:1.5px solid var(--border);border-radius:10px;}
+.disc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.disc-lbl{font-size:.78rem;font-weight:700;color:var(--navy);}
+.disc-type-row{display:flex;gap:4px;}
+.disc-type-btn{font-family:inherit;font-size:.72rem;font-weight:700;padding:4px 12px;
+  border:1.5px solid var(--border);border-radius:7px;background:#fff;color:var(--muted);cursor:pointer;}
+.disc-type-btn.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.disc-input-row{display:flex;align-items:center;gap:8px;}
+.disc-input{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:inherit;font-size:.95rem;background:#fff;outline:none;min-width:0;}
+.disc-result{font-size:.82rem;color:var(--green);font-weight:700;flex-shrink:0;}
+.otb-disc-row{display:none;justify-content:space-between;align-items:center;
+  padding:3px 0;font-size:.75rem;}
+.otb-disc-lbl{color:var(--green);}
+.otb-disc-val{color:var(--green);font-weight:700;}
+.add-extra-btn{display:block;width:100%;margin:6px 0 0;padding:9px;
+  background:var(--card);border:1.5px dashed var(--border);border-radius:9px;
+  font-family:inherit;font-size:.78rem;color:var(--blue);cursor:pointer;text-align:center;font-weight:600;}
+.extra-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.extra-name{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:inherit;font-size:.85rem;background:#fff;outline:none;min-width:0;}
+.extra-price{width:90px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:inherit;font-size:.85rem;background:#fff;outline:none;text-align:right;}
+.extra-del{width:32px;height:32px;border:none;background:#fef2f2;color:var(--red);
+  border-radius:8px;font-size:.9rem;cursor:pointer;flex-shrink:0;font-family:inherit;}
 .ord-row.voided{opacity:.65;background:#fafafa;}
 .void-line{text-decoration:line-through;opacity:.6;}
 </style>
@@ -420,7 +446,7 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
       <div class="rush-ico">⚡</div>
       <div class="rush-info">
         <div class="rush-title">ດ່ວນ · Rush Order</div>
-        <div class="rush-sub">ເຂົ້າຄິວ ມື້ຖັດໄປ · ຄ່າດ່ວນ +฿<span id="rush-fee-lbl">100</span></div>
+        <div class="rush-sub">ເຂົ້າຄິວ ມື້ຖັດໄປ · ຄ່າດ່ວນ +฿<span id="rush-fee-lbl">300</span></div>
       </div>
       <div class="rush-pill" id="rush-pill">ປິດ</div>
     </div>
@@ -444,8 +470,21 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
       </div>
     </div>
 
+    <!-- Additional Services -->
+    <div class="sec-hd" style="margin:14px 0 8px">ບໍລິການເພີ່ມເຕີມ <span style="font-size:.62rem;font-weight:400;color:var(--muted)">(ຖ້າມີ)</span></div>
+    <div id="extras-list"></div>
+    <button class="add-extra-btn" onclick="addExtra()">⊕ ເພີ່ມບໍລິການ / Add Service</button>
+
     <!-- Total -->
-    <div class="order-total-bar">
+    <div class="order-total-bar" style="margin-top:12px">
+      <div class="otb-disc-row" id="otb-sub-row">
+        <span class="otb-lbl" style="font-size:.72rem;opacity:.7">ກ່ອນຫຼຸດ</span>
+        <span id="otb-sub" style="font-size:.78rem;color:var(--muted)"></span>
+      </div>
+      <div class="otb-disc-row" id="otb-disc-row">
+        <span class="otb-disc-lbl">🏷 ສ່ວນຫຼຸດ</span>
+        <span class="otb-disc-val" id="otb-disc-val"></span>
+      </div>
       <div class="otb-row">
         <span class="otb-lbl">ລາຄາລວມ</span>
         <div style="text-align:right">
@@ -453,7 +492,22 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
           <div class="otb-lak" id="otb-lak">₭0</div>
         </div>
       </div>
-      <div class="otb-rush" id="otb-rush" style="display:none">+ ຄ່າດ່ວນ ฿100 ລວມຢູ່ໃນລາຄານີ້</div>
+      <div class="otb-rush" id="otb-rush" style="display:none">⚡ ຄ່າດ່ວນ ฿300 ລວມຢູ່ໃນລາຄານີ້</div>
+    </div>
+
+    <!-- Discount -->
+    <div class="disc-section">
+      <div class="disc-top">
+        <span class="disc-lbl">🏷 ສ່ວນຫຼຸດ / Discount</span>
+        <div class="disc-type-row">
+          <button class="disc-type-btn on" id="disc-thb" onclick="setDiscType('thb')">฿ ຄົງທີ່</button>
+          <button class="disc-type-btn" id="disc-pct" onclick="setDiscType('pct')">% ເປີເຊັນ</button>
+        </div>
+      </div>
+      <div class="disc-input-row">
+        <input class="disc-input" type="number" id="disc-input" min="0" placeholder="0 = ບໍ່ມີ" oninput="updDiscount()">
+        <span class="disc-result" id="disc-result"></span>
+      </div>
     </div>
 
     <!-- Currency -->
@@ -568,6 +622,8 @@ var cart=[];         // [{type,size,qty,pp,sub}]
 var itemForms=[];    // [{det,font,thread,pos}] — persisted when navigating away
 var posType='simple', posSize='1-2', posQty=1;
 var isRush=false, payCurrency='THB';
+var discountType='thb', discountValue=0;
+var extras=[];
 var curPage='pos', prevPage='pos', wkOff=0, dbFilt='all';
 var ordersCache=[], _fdb=null, _unsub=null;
 var _previewQueueDate=''; // calculated queue date shown in form
@@ -802,6 +858,7 @@ function renderCart(){
 function goToOrderForm(){
   if(!cart.length){alert('ກະລຸນາເພີ່ມລາຍການກ່ອນ');return;}
   buildOrderItems();
+  renderExtras();
   updOrderTotal();
   updSchedule();
   goPage('order');
@@ -845,13 +902,56 @@ function saveItemForms(){
   }
 }
 
+function renderExtras(){
+  var el=document.getElementById('extras-list');if(!el)return;
+  if(!extras.length){el.innerHTML='';return;}
+  el.innerHTML=extras.map(function(e,i){
+    return'<div class="extra-row">'+
+      '<input class="extra-name" type="text" id="ex-name-'+i+'" placeholder="ຊື່ບໍລິການ" value="'+e.name.replace(/"/g,'&quot;')+'" oninput="updExtra('+i+')">'+
+      '<input class="extra-price" type="number" id="ex-price-'+i+'" placeholder="฿" min="0" value="'+(e.price||'')+'" oninput="updExtra('+i+')">'+
+      '<button class="extra-del" onclick="removeExtra('+i+')">✕</button>'+
+    '</div>';
+  }).join('');
+}
+function addExtra(){extras.push({name:'',price:0});renderExtras();updOrderTotal();}
+function removeExtra(i){extras.splice(i,1);renderExtras();updOrderTotal();}
+function updExtra(i){
+  var n=document.getElementById('ex-name-'+i);
+  var p=document.getElementById('ex-price-'+i);
+  if(extras[i]){extras[i].name=n?n.value:'';extras[i].price=p?parseFloat(p.value)||0:0;}
+  updOrderTotal();
+}
+function calcDisc(subtotal){
+  if(!discountValue||discountValue<=0)return 0;
+  if(discountType==='pct')return Math.round(subtotal*(discountValue/100));
+  return Math.min(parseFloat(discountValue)||0,subtotal);
+}
+function setDiscType(t){
+  discountType=t;
+  document.getElementById('disc-thb').classList.toggle('on',t==='thb');
+  document.getElementById('disc-pct').classList.toggle('on',t==='pct');
+  updOrderTotal();
+}
+function updDiscount(){
+  discountValue=parseFloat(document.getElementById('disc-input').value)||0;
+  updOrderTotal();
+}
 function updOrderTotal(){
   var base=cart.reduce(function(s,it){return s+it.sub;},0);
-  var tot=base+(isRush?RUSH_FEE:0);
+  var extrasTot=extras.reduce(function(s,e){return s+(parseFloat(e.price)||0);},0);
+  var subtotal=base+(isRush?RUSH_FEE:0)+extrasTot;
+  var discAmt=calcDisc(subtotal);
+  var tot=Math.max(0,subtotal-discAmt);
   document.getElementById('otb-thb').textContent=baht(tot);
   document.getElementById('otb-lak').textContent=lak(toLak(tot));
-  var rr=document.getElementById('otb-rush');
-  if(rr)rr.style.display=isRush?'block':'none';
+  var rr=document.getElementById('otb-rush');if(rr)rr.style.display=isRush?'block':'none';
+  var hasDisc=discAmt>0;
+  var sr=document.getElementById('otb-sub-row');if(sr)sr.style.display=hasDisc?'flex':'none';
+  var dr=document.getElementById('otb-disc-row');if(dr)dr.style.display=hasDisc?'flex':'none';
+  var sv=document.getElementById('otb-sub');if(sv)sv.textContent=baht(subtotal);
+  var dv=document.getElementById('otb-disc-val');if(dv)dv.textContent='- '+baht(discAmt);
+  var res=document.getElementById('disc-result');
+  if(res)res.textContent=hasDisc?'- '+baht(discAmt):'';
 }
 
 function updSchedule(){
@@ -925,7 +1025,10 @@ function doSubmit(mode){
   // Assign real queue date now
   var qd=nextAvailSlot(isRush);
   var base=cart.reduce(function(s,it){return s+it.sub;},0);
-  var tot=base+(isRush?RUSH_FEE:0);
+  var extrasTot=extras.reduce(function(s,e){return s+(parseFloat(e.price)||0);},0);
+  var subtotal=base+(isRush?RUSH_FEE:0)+extrasTot;
+  var discAmt=calcDisc(subtotal);
+  var tot=Math.max(0,subtotal-discAmt);
   var totalPcs=items.reduce(function(s,it){return s+it.quantity;},0);
   var label=items[0].designType+' ('+items[0].sizeCm+' cm)'+(items.length>1?' +'+( items.length-1)+' ລາຍການ':'');
 
@@ -945,6 +1048,10 @@ function doSubmit(mode){
     designType:items[0].designType,
     sizeCm:items[0].sizeCm,
     pricePerPiece:items[0].pricePerPiece,
+    extras:extras.filter(function(e){return e.name||e.price;}),
+    discountType:discountType,
+    discountValue:discountValue,
+    discountAmount:discAmt,
     totalTHB:tot,
     total:tot,
     payStatus:'unpaid',
@@ -957,7 +1064,7 @@ function doSubmit(mode){
 
   if(mode==='new'){
     // Clear cart and item forms, reset form for next order
-    cart=[];itemForms=[];isRush=false;payCurrency='THB';
+    cart=[];itemForms=[];isRush=false;payCurrency='THB';discountType='thb';discountValue=0;extras=[];var _di=document.getElementById('disc-input');if(_di)_di.value='';renderExtras();
     var rb=document.getElementById('rush-box');if(rb)rb.classList.remove('on');
     var rp=document.getElementById('rush-pill');if(rp)rp.textContent='ປິດ';
     document.getElementById('cur-thb').classList.add('on');
@@ -980,7 +1087,7 @@ function doSubmit(mode){
     goPage('pos');
   } else {
     // Clear everything and go to queue
-    cart=[];itemForms=[];isRush=false;payCurrency='THB';
+    cart=[];itemForms=[];isRush=false;payCurrency='THB';discountType='thb';discountValue=0;extras=[];var _di=document.getElementById('disc-input');if(_di)_di.value='';renderExtras();
     var rb=document.getElementById('rush-box');if(rb)rb.classList.remove('on');
     var rp=document.getElementById('rush-pill');if(rp)rp.textContent='ປິດ';
     document.getElementById('cur-thb').classList.add('on');
@@ -1194,8 +1301,10 @@ function openQM(id){
     mr('ຮັບສິນຄ້າ',fdate(o.pickupDate||o.deliveryDate))+
     mr('ເຫຼືອ',daysLeftBadge(o.pickupDate||o.deliveryDate)||'—')+
     itemsHtml+
-    (o.isRush?mr('ຄ່າດ່ວນ',baht(o.rushFee||RUSH_FEE)):'')+
-    mr('ລາຄາ',baht(tot)+' · '+lak(toLak(tot)))+
+    (o.isRush?mr('⚡ ຄ່າດ່ວນ',baht(o.rushFee||RUSH_FEE)):'')+
+    (o.extras&&o.extras.length?o.extras.map(function(e){return mr('➕ '+e.name,baht(e.price));}).join(''):'')+
+    (o.discountAmount>0?mr('🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':''),'<span style="color:var(--green)">- '+baht(o.discountAmount)+'</span>'):'')+
+    mr('ລາຄາລວມ',baht(tot)+' · '+lak(toLak(tot)))+
     mr('ສະກຸນ',o.payCurrency||'THB')+
     paySection(o,id);
 
@@ -1421,6 +1530,8 @@ function showR(id){
     '<div class="r-total">'+
       lineItems+
       (o.isRush?'<div class="rt-row"><span>⚡ ຄ່າດ່ວນ</span><span>'+baht(o.rushFee||RUSH_FEE)+'</span></div>':'')+
+      (o.extras&&o.extras.length?o.extras.map(function(e){return'<div class="rt-row"><span>➕ '+e.name+'</span><span>'+baht(e.price)+'</span></div>';}).join(''):'')+
+      (o.discountAmount>0?'<div class="rt-row"><span>🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':'')+'</span><span style="color:var(--green);font-weight:700">- '+baht(o.discountAmount)+'</span></div>':'')+
       '<div class="rt-row grand"><span>ລວມ</span>'+
         '<span>'+baht(tot)+'<br><small style="font-weight:400;color:var(--muted);font-size:.8em">'+lak(toLak(tot))+'</small></span>'+
       '</div>'+payRow+
