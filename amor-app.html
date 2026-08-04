@@ -650,6 +650,7 @@ var COMPLEX=[
 // State
 var cart=[];         // [{type,size,qty,pp,sub}]
 var itemForms=[];    // [{det,font,thread,pos}] — persisted when navigating away
+var prodForms={};    // {towel:[{word,fnt,thr},...], bib:[...]} — per unit
 var posType='simple', posSize='1-2', posQty=1;
 var PRODUCTS=[
   {id:'towel',name:'ຜ້າເຊັດໂຕປັກຊື່',sub:'Embroidered Towel',priceLAK:350000},
@@ -909,7 +910,7 @@ function renderCart(){
 function goToOrderForm(){
   if(!cart.length&&!hasProdItems()){alert('ກະລຸນາເພີ່ມລາຍການ ຫຼື ສິນຄ້າກ່ອນ');return;}
   buildOrderItems();
-  buildProductsSummary();
+  buildProductForms();
   renderExtraProds();
   renderExtras();
   updOrderTotal();
@@ -984,27 +985,49 @@ function renderProductCards(){
     '</div>';
   }).join('');
 }
-function buildProductsSummary(){
+function buildProductForms(){
   var wrap=document.getElementById('order-products-wrap');
   var el=document.getElementById('order-products');
   if(!el||!wrap)return;
   var active=PRODUCTS.filter(function(p){return(prodCart[p.id]||0)>0;});
   if(!active.length){wrap.style.display='none';el.innerHTML='';return;}
   wrap.style.display='block';
-  el.innerHTML=active.map(function(p){
+  var html='';
+  active.forEach(function(p){
     var qty=prodCart[p.id];
-    return'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;'+
-      'background:var(--card);border:1.5px solid var(--border);border-radius:9px;margin-bottom:6px">'+
-      '<div>'+
-        '<div style="font-size:.82rem;font-weight:700">'+p.name+'</div>'+
-        '<div style="font-size:.63rem;color:var(--muted)">×'+qty+' · '+lak(p.priceLAK)+'/ອັນ</div>'+
-      '</div>'+
-      '<div style="text-align:right">'+
-        '<div style="font-weight:700;font-size:.88rem">'+lak(p.priceLAK*qty)+'</div>'+
-        '<div style="font-size:.63rem;color:var(--muted)">≈'+baht(pToTHB(p.priceLAK)*qty)+'</div>'+
-      '</div>'+
-    '</div>';
-  }).join('');
+    for(var u=0;u<qty;u++){
+      var saved=(prodForms[p.id]||[])[u]||{};
+      var unitLabel=qty>1?' · ອັນທີ '+(u+1)+'/'+qty:'';
+      html+='<div class="item-sec">'+
+        '<div class="item-sec-hd">'+
+          '<span>🛍 '+p.name+unitLabel+'</span>'+
+          '<span class="item-sec-price">'+lak(p.priceLAK)+'</span>'+
+        '</div>'+
+        '<div class="field"><label>ຄໍາປັກ <span class="req">*</span></label>'+
+          '<input type="text" id="fp-'+p.id+'-'+u+'-word" placeholder="ຊື່ / ຂໍ້ຄວາມທີ່ຕ້ອງການປັກ..." value="'+esc(saved.word||'')+'">'+
+          '<div class="hint">⚠ ກວດຄໍາສະກົດ — ປັກຕາມທີ່ຂຽນ</div></div>'+
+        '<div class="two">'+
+          '<div class="field"><label>ຟອນ / Font</label><input type="text" id="fp-'+p.id+'-'+u+'-fnt" placeholder="Script, Block..." value="'+esc(saved.fnt||'')+'"></div>'+
+          '<div class="field"><label>ສີດ້າຍ / Thread</label><input type="text" id="fp-'+p.id+'-'+u+'-thr" placeholder="ຂາວ, ທອງ..." value="'+esc(saved.thr||'')+'"></div>'+
+        '</div>'+
+      '</div>';
+    }
+  });
+  el.innerHTML=html;
+}
+function saveProdForms(){
+  PRODUCTS.forEach(function(p){
+    var qty=prodCart[p.id]||0;
+    if(!qty){delete prodForms[p.id];return;}
+    prodForms[p.id]=[];
+    for(var u=0;u<qty;u++){
+      prodForms[p.id][u]={
+        word:(document.getElementById('fp-'+p.id+'-'+u+'-word')||{value:''}).value,
+        fnt:(document.getElementById('fp-'+p.id+'-'+u+'-fnt')||{value:''}).value,
+        thr:(document.getElementById('fp-'+p.id+'-'+u+'-thr')||{value:''}).value,
+      };
+    }
+  });
 }
 // ─── EXTRA PRODUCTS (custom open fields) ─────────
 function renderExtraProds(){
@@ -1155,10 +1178,18 @@ function doSubmit(mode){
   var base=cart.reduce(function(s,it){return s+it.sub;},0);
   var extrasTot=extras.reduce(function(s,e){return s+(parseFloat(e.price)||0);},0);
   var epTot=extraProds.reduce(function(s,e){return s+pToTHB(e.priceLAK||0);},0);
+  var prodValid=true;
   var savedProds=PRODUCTS.filter(function(p){return(prodCart[p.id]||0)>0;}).map(function(p){
     var qty=prodCart[p.id];
-    return{id:p.id,name:p.name,qty:qty,priceLAK:p.priceLAK,subtotalLAK:p.priceLAK*qty,subtotalTHB:pToTHB(p.priceLAK)*qty};
+    var units=[];
+    for(var u=0;u<qty;u++){
+      var w=(document.getElementById('fp-'+p.id+'-'+u+'-word')||{value:''}).value.trim();
+      if(!w&&prodValid){alert(p.name+(qty>1?' ອັນທີ '+(u+1):'') +': ກະລຸນາໃສ່ຄໍາປັກ');prodValid=false;}
+      units.push({word:w,font:(document.getElementById('fp-'+p.id+'-'+u+'-fnt')||{value:''}).value.trim(),thread:(document.getElementById('fp-'+p.id+'-'+u+'-thr')||{value:''}).value.trim()});
+    }
+    return{id:p.id,name:p.name,qty:qty,priceLAK:p.priceLAK,subtotalLAK:p.priceLAK*qty,subtotalTHB:pToTHB(p.priceLAK)*qty,units:units};
   });
+  if(!prodValid)return;
   var subtotal=base+(isRush?RUSH_FEE:0)+prodTotal()+extrasTot+epTot;
   var discAmt=calcDisc(subtotal);
   var tot=Math.max(0,subtotal-discAmt);
@@ -1200,7 +1231,7 @@ function doSubmit(mode){
 
   if(mode==='new'){
     // Clear cart and item forms, reset form for next order
-    cart=[];itemForms=[];isRush=false;payCurrency='THB';discountType='thb';discountValue=0;extras=[];prodCart={towel:0,bib:0};extraProds=[];var _di=document.getElementById('disc-input');if(_di)_di.value='';renderExtras();renderExtraProds();renderProductCards();
+    cart=[];itemForms=[];prodForms={};isRush=false;payCurrency='THB';discountType='thb';discountValue=0;extras=[];prodCart={towel:0,bib:0};extraProds=[];var _di=document.getElementById('disc-input');if(_di)_di.value='';renderExtras();renderExtraProds();renderProductCards();renderCart();
     var rb=document.getElementById('rush-box');if(rb)rb.classList.remove('on');
     var rp=document.getElementById('rush-pill');if(rp)rp.textContent='ປິດ';
     document.getElementById('cur-thb').classList.add('on');
@@ -1223,7 +1254,7 @@ function doSubmit(mode){
     goPage('pos');
   } else {
     // Clear everything and go to queue
-    cart=[];itemForms=[];isRush=false;payCurrency='THB';discountType='thb';discountValue=0;extras=[];prodCart={towel:0,bib:0};extraProds=[];var _di=document.getElementById('disc-input');if(_di)_di.value='';renderExtras();renderExtraProds();renderProductCards();
+    cart=[];itemForms=[];prodForms={};isRush=false;payCurrency='THB';discountType='thb';discountValue=0;extras=[];prodCart={towel:0,bib:0};extraProds=[];var _di=document.getElementById('disc-input');if(_di)_di.value='';renderExtras();renderExtraProds();renderProductCards();renderCart();
     var rb=document.getElementById('rush-box');if(rb)rb.classList.remove('on');
     var rp=document.getElementById('rush-pill');if(rp)rp.textContent='ປິດ';
     document.getElementById('cur-thb').classList.add('on');
@@ -1241,7 +1272,7 @@ function doSubmit(mode){
 // ─────────────────────────────────────────────────
 function goPage(pg){
   // Save item form data when leaving order form
-  if(curPage==='order') saveItemForms();
+  if(curPage==='order'){saveItemForms();saveProdForms();}
 
   var pgs=document.querySelectorAll('.page');
   for(var i=0;i<pgs.length;i++) pgs[i].classList.remove('on');
@@ -1265,6 +1296,7 @@ function goPage(pg){
   // When navigating TO order form, rebuild items from current cart
   if(pg==='order'){
     buildOrderItems();
+    buildProductForms();
     updOrderTotal();
     updSchedule();
   }
@@ -1438,7 +1470,12 @@ function openQM(id){
     mr('ເຫຼືອ',daysLeftBadge(o.pickupDate||o.deliveryDate)||'—')+
     itemsHtml+
     (o.isRush?mr('⚡ ຄ່າດ່ວນ',baht(o.rushFee||RUSH_FEE)):'')+
-    (o.products&&o.products.length?o.products.map(function(p){return mr('🛍 '+p.name+' ×'+p.qty,lak(p.subtotalLAK)+' ≈'+baht(p.subtotalTHB));}).join(''):'')+
+    (o.products&&o.products.length?o.products.map(function(p){
+      var unitHtml=(p.units&&p.units.length?p.units.map(function(u,i){
+        return mr('  '+(p.qty>1?'ອັນ'+(i+1)+' ':'')+'ຄໍາ',u.word||'—')+(u.font?mr('  ຟອນ',u.font):'')+(u.thread?mr('  ດ້າຍ',u.thread):'');
+      }).join(''):'');
+      return mr('🛍 '+p.name+' ×'+p.qty,lak(p.subtotalLAK)+' ≈'+baht(p.subtotalTHB))+unitHtml;
+    }).join(''):'')+
     (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return mr('🛍 '+e.name,lak(e.priceLAK||0)+' ≈'+baht(pToTHB(e.priceLAK||0)));}).join(''):'')+
     (o.extras&&o.extras.length?o.extras.map(function(e){return mr('➕ '+e.name,baht(e.price));}).join(''):'')+
     (o.discountAmount>0?mr('🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':''),'<span style="color:var(--green)">- '+baht(o.discountAmount)+'</span>'):'')+
@@ -1668,7 +1705,12 @@ function showR(id){
     '<div class="r-total">'+
       lineItems+
       (o.isRush?'<div class="rt-row"><span>⚡ ຄ່າດ່ວນ</span><span>'+baht(o.rushFee||RUSH_FEE)+'</span></div>':'')+
-      (o.products&&o.products.length?o.products.map(function(p){return'<div class="rt-row"><span>🛍 '+p.name+' ×'+p.qty+'</span><span>'+lak(p.subtotalLAK)+'</span></div>';}).join(''):'')+
+      (o.products&&o.products.length?o.products.map(function(p){
+        var unitLines=(p.units&&p.units.length?p.units.map(function(u,i){
+          return'<div style="font-size:.72rem;color:var(--muted);padding-left:12px">'+(p.qty>1?'ອັນ'+(i+1)+': ':'')+u.word+(u.font?' · '+u.font:'')+(u.thread?' · '+u.thread:'')+'</div>';
+        }).join(''):'');
+        return'<div class="rt-row"><span>🛍 '+p.name+' ×'+p.qty+'</span><span>'+lak(p.subtotalLAK)+'</span></div>'+unitLines;
+      }).join(''):'')+
       (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return'<div class="rt-row"><span>🛍 '+e.name+'</span><span>'+lak(e.priceLAK||0)+'</span></div>';}).join(''):'')+
       (o.extras&&o.extras.length?o.extras.map(function(e){return'<div class="rt-row"><span>➕ '+e.name+'</span><span>'+baht(e.price)+'</span></div>';}).join(''):'')+
       (o.discountAmount>0?'<div class="rt-row"><span>🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':'')+'</span><span style="color:var(--green);font-weight:700">- '+baht(o.discountAmount)+'</span></div>':'')+
