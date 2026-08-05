@@ -286,6 +286,15 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
 .mb-undo{background:var(--card);color:var(--navy);}
 .mb-void{background:#f5f5f5;color:#888;border:1px solid #ddd;}
 .mb-rcpt{background:var(--card);color:var(--navy);}
+.mb-edit{background:var(--navy);color:#fff;}
+/* ── EDIT MODAL ── */
+#edit-modal .modal-box{max-height:94vh;}
+.em-sec{font-size:.65rem;font-weight:700;color:var(--blue);text-transform:uppercase;
+  letter-spacing:.9px;margin:14px 0 7px;padding-bottom:4px;border-bottom:1.5px solid var(--border);}
+.em-item-hd{font-size:.74rem;font-weight:700;color:var(--navy);background:var(--card);
+  padding:6px 10px;border-radius:7px;margin:8px 0 6px;}
+.em-extra-row{display:flex;gap:6px;margin-bottom:6px;}
+.em-extra-row input{flex:1;}
 .pay-partial-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;
   font-family:inherit;font-size:.88rem;margin-top:6px;background:#fff;outline:none;}
 .pay-sub-hd{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
@@ -595,6 +604,38 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
     <div class="modal-hd"><span id="qm-title">ຄໍາສັ່ງ</span><button onclick="closeQM()">✕</button></div>
     <div class="modal-body" id="qm-body"></div>
     <div class="modal-btns" id="qm-btns"></div>
+  </div>
+</div>
+
+<!-- EDIT ORDER MODAL -->
+<div class="modal" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-hd">✏ ແກ້ໄຂ <span id="em-title"></span><button onclick="closeEM()">✕</button></div>
+    <div class="modal-body" id="em-body">
+      <div class="em-sec">ຂໍ້ມູນລູກຄ້າ</div>
+      <div class="field"><label class="lbl">ຊື່ລູກຄ້າ <span class="req">*</span></label><input type="text" id="em-name" class="inp"></div>
+      <div class="field"><label class="lbl">ເບີໂທ</label><input type="tel" id="em-phone" class="inp"></div>
+      <div class="field"><label class="lbl">📦 ວັນຜະລິດ</label><input type="date" id="em-queue" class="inp"></div>
+      <div class="field"><label class="lbl">🚚 ວັນຮັບສິນຄ້າ</label><input type="date" id="em-pickup" class="inp"></div>
+      <div id="em-items"></div>
+      <div id="em-products"></div>
+      <div id="em-extras"></div>
+      <div id="em-ep"></div>
+      <div class="em-sec">ສ່ວນຫຼຸດ</div>
+      <div class="two">
+        <div class="field"><label class="lbl">ປະເພດ</label>
+          <select id="em-disc-type" class="inp">
+            <option value="thb">฿ ຄົງທີ່</option>
+            <option value="pct">% ເປີເຊັນ</option>
+          </select>
+        </div>
+        <div class="field"><label class="lbl">ຈໍານວນ</label><input type="number" id="em-disc-val" class="inp" min="0" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn mb-done" onclick="saveEdit()">✓ ບັນທຶກ</button>
+      <button class="mbtn mb-undo" onclick="closeEM()">ຍົກເລີກ</button>
+    </div>
   </div>
 </div>
 
@@ -1432,6 +1473,187 @@ function unvoidOrder(id){
   var a=loadO();for(var i=0;i<a.length;i++){if(a[i].id===id){a[i].status='new';break;}}
   saveO(a);closeQM();if(curPage==='dashboard')renderD();if(curPage==='queue')renderQ();
 }
+
+// ─────────────────────────────────────────────────
+// EDIT ORDER MODAL
+// ─────────────────────────────────────────────────
+var editId=null;
+function openEdit(id){
+  var a=loadO(),o=null;
+  for(var i=0;i<a.length;i++){if(a[i].id===id){o=a[i];break;}}
+  if(!o)return;
+  editId=id;
+  document.getElementById('em-title').textContent='#'+id;
+  document.getElementById('em-name').value=o.clientName||'';
+  document.getElementById('em-phone').value=o.contactNumber||'';
+  document.getElementById('em-queue').value=o.queueDate||o.deliveryDate||'';
+  document.getElementById('em-pickup').value=o.pickupDate||o.deliveryDate||'';
+
+  // Embroidery items
+  var iHtml='';
+  if(o.items&&o.items.length){
+    iHtml='<div class="em-sec">ລາຍລະອຽດການປັກ</div>';
+    for(var j=0;j<o.items.length;j++){
+      var it=o.items[j];
+      iHtml+='<div class="em-item-hd">'+(j+1)+'. '+esc(it.designType||'')+' '+esc(it.sizeCm||'')+'cm ×'+it.quantity+'</div>'+
+        '<div class="field"><label class="lbl">ລາຍລະອຽດ <span class="req">*</span></label>'+
+          '<textarea class="inp" id="em-det-'+j+'" rows="2" style="resize:vertical">'+esc(it.embroideryDetails||it.wording||'')+'</textarea></div>'+
+        '<div class="two">'+
+          '<div class="field"><label class="lbl">ຟອນ</label><input type="text" class="inp" id="em-fnt-'+j+'" value="'+esc(it.font||'')+'"></div>'+
+          '<div class="field"><label class="lbl">ສີດ້າຍ</label><input type="text" class="inp" id="em-thr-'+j+'" value="'+esc(it.thread||'')+'"></div>'+
+        '</div>'+
+        '<div class="field"><label class="lbl">ຕໍາແໜ່ງ</label><input type="text" class="inp" id="em-pos-'+j+'" value="'+esc(it.position||'')+'"></div>';
+    }
+  }
+  document.getElementById('em-items').innerHTML=iHtml;
+
+  // Fixed products (per-unit)
+  var pHtml='';
+  if(o.products&&o.products.length){
+    pHtml='<div class="em-sec">ສິນຄ້າ</div>';
+    for(var p=0;p<o.products.length;p++){
+      var prod=o.products[p];
+      for(var u=0;u<(prod.qty||1);u++){
+        var unit=(prod.units&&prod.units[u])||{};
+        pHtml+='<div class="em-item-hd">🛍 '+esc(prod.name||'')+
+          (prod.qty>1?' — ອັນທີ '+(u+1)+'/'+prod.qty:'')+'</div>'+
+          '<div class="field"><label class="lbl">ຄໍາປັກ <span class="req">*</span></label>'+
+            '<input type="text" class="inp" id="em-pw-'+p+'-'+u+'" value="'+esc(unit.word||'')+'"></div>'+
+          '<div class="two">'+
+            '<div class="field"><label class="lbl">ຟອນ</label><input type="text" class="inp" id="em-pf-'+p+'-'+u+'" value="'+esc(unit.font||'')+'"></div>'+
+            '<div class="field"><label class="lbl">ສີດ້າຍ</label><input type="text" class="inp" id="em-pt-'+p+'-'+u+'" value="'+esc(unit.thread||'')+'"></div>'+
+          '</div>';
+      }
+    }
+  }
+  document.getElementById('em-products').innerHTML=pHtml;
+
+  // Additional services (extras THB)
+  var exHtml='';
+  if(o.extras&&o.extras.length){
+    exHtml='<div class="em-sec">ບໍລິການເພີ່ມເຕີມ</div>';
+    for(var e=0;e<o.extras.length;e++){
+      exHtml+='<div class="em-extra-row">'+
+        '<input type="text" class="inp" id="em-ex-n-'+e+'" value="'+esc(o.extras[e].name||'')+'" placeholder="ຊື່ບໍລິການ">'+
+        '<input type="number" class="inp" id="em-ex-p-'+e+'" value="'+(o.extras[e].price||0)+'" style="width:90px;flex:none" placeholder="฿">'+
+      '</div>';
+    }
+  }
+  document.getElementById('em-extras').innerHTML=exHtml;
+
+  // Additional products (extraProducts LAK)
+  var epHtml='';
+  if(o.extraProducts&&o.extraProducts.length){
+    epHtml='<div class="em-sec">ສິນຄ້າອື່ນໆ</div>';
+    for(var k=0;k<o.extraProducts.length;k++){
+      epHtml+='<div class="em-extra-row">'+
+        '<input type="text" class="inp" id="em-ep-n-'+k+'" value="'+esc(o.extraProducts[k].name||'')+'" placeholder="ຊື່ສິນຄ້າ">'+
+        '<input type="number" class="inp" id="em-ep-l-'+k+'" value="'+(o.extraProducts[k].priceLAK||0)+'" style="width:110px;flex:none" placeholder="₭">'+
+      '</div>';
+    }
+  }
+  document.getElementById('em-ep').innerHTML=epHtml;
+
+  // Discount
+  var dt=document.getElementById('em-disc-type');
+  var dv=document.getElementById('em-disc-val');
+  if(dt)dt.value=o.discountType||'thb';
+  if(dv)dv.value=o.discountValue||0;
+
+  var m=document.getElementById('edit-modal');if(m)m.classList.add('on');
+}
+
+function closeEM(){var m=document.getElementById('edit-modal');if(m)m.classList.remove('on');}
+
+function saveEdit(){
+  if(!editId)return;
+  var a=loadO();
+  for(var i=0;i<a.length;i++){
+    if(a[i].id!==editId)continue;
+    var o=a[i];
+
+    // Customer info + dates
+    var nm=(document.getElementById('em-name')||{value:''}).value.trim();
+    if(!nm){alert('ກະລຸນາໃສ່ຊື່ລູກຄ້າ');return;}
+    o.clientName=nm;
+    o.contactNumber=(document.getElementById('em-phone')||{value:''}).value.trim();
+    o.queueDate=(document.getElementById('em-queue')||{value:''}).value||o.queueDate;
+    o.pickupDate=(document.getElementById('em-pickup')||{value:''}).value||o.pickupDate;
+    o.deliveryDate=o.pickupDate; // keep in sync
+
+    // Embroidery items
+    if(o.items&&o.items.length){
+      for(var j=0;j<o.items.length;j++){
+        var det=(document.getElementById('em-det-'+j)||{value:''}).value.trim();
+        if(!det){alert('ລາຍການ '+(j+1)+': ກະລຸນາໃສ່ລາຍລະອຽດ');return;}
+        o.items[j].embroideryDetails=det;
+        o.items[j].wording=det;
+        o.items[j].font=(document.getElementById('em-fnt-'+j)||{value:''}).value.trim();
+        o.items[j].thread=(document.getElementById('em-thr-'+j)||{value:''}).value.trim();
+        o.items[j].position=(document.getElementById('em-pos-'+j)||{value:''}).value.trim();
+      }
+    }
+
+    // Product units
+    if(o.products&&o.products.length){
+      for(var p=0;p<o.products.length;p++){
+        var prod=o.products[p];
+        if(!prod.units)prod.units=[];
+        for(var u=0;u<(prod.qty||1);u++){
+          var w=(document.getElementById('em-pw-'+p+'-'+u)||{value:''}).value.trim();
+          if(!w){alert(esc(prod.name)+(prod.qty>1?' ອັນທີ '+(u+1):'') +': ກະລຸນາໃສ່ຄໍາປັກ');return;}
+          if(!prod.units[u])prod.units[u]={};
+          prod.units[u].word=w;
+          prod.units[u].font=(document.getElementById('em-pf-'+p+'-'+u)||{value:''}).value.trim();
+          prod.units[u].thread=(document.getElementById('em-pt-'+p+'-'+u)||{value:''}).value.trim();
+        }
+      }
+    }
+
+    // Additional services
+    if(o.extras&&o.extras.length){
+      for(var e=0;e<o.extras.length;e++){
+        o.extras[e].name=(document.getElementById('em-ex-n-'+e)||{value:''}).value.trim();
+        o.extras[e].price=parseFloat((document.getElementById('em-ex-p-'+e)||{value:0}).value)||0;
+      }
+    }
+
+    // Additional products
+    if(o.extraProducts&&o.extraProducts.length){
+      for(var k=0;k<o.extraProducts.length;k++){
+        o.extraProducts[k].name=(document.getElementById('em-ep-n-'+k)||{value:''}).value.trim();
+        o.extraProducts[k].priceLAK=parseFloat((document.getElementById('em-ep-l-'+k)||{value:0}).value)||0;
+      }
+    }
+
+    // Discount + recalculate total
+    var newDT=(document.getElementById('em-disc-type')||{value:'thb'}).value;
+    var newDV=parseFloat((document.getElementById('em-disc-val')||{value:0}).value)||0;
+    o.discountType=newDT;
+    o.discountValue=newDV;
+    var subtotal=
+      (o.items||[]).reduce(function(s,it){return s+(it.subtotalTHB||0);},0)+
+      (o.isRush?o.rushFee||RUSH_FEE:0)+
+      (o.products||[]).reduce(function(s,pr){return s+(pr.subtotalTHB||0);},0)+
+      (o.extras||[]).reduce(function(s,ex){return s+(parseFloat(ex.price)||0);},0)+
+      (o.extraProducts||[]).reduce(function(s,ex){return s+pToTHB(ex.priceLAK||0);},0);
+    var dAmt=0;
+    if(newDV>0){
+      dAmt=newDT==='pct'?Math.round(subtotal*newDV/100):Math.min(newDV,subtotal);
+    }
+    o.discountAmount=dAmt;
+    o.totalTHB=Math.max(0,subtotal-dAmt);
+    o.total=o.totalTHB;
+
+    break;
+  }
+  saveO(a);
+  closeEM();
+  if(curPage==='queue')renderQ();
+  if(curPage==='dashboard')renderD();
+  openQM(editId);
+}
+
 function shiftW(d){wkOff+=d;renderQ();}
 function wkToday(){wkOff=0;renderQ();}
 
@@ -1495,6 +1717,7 @@ function openQM(id){
       if(o.status!=='new')         mk('mb-undo','↩ ຄືນ',function(){mvS(id,'new');closeQM();});
       mk('mb-void','⊘ Void',function(){if(confirm('Void ຄໍາສັ່ງ #'+id+'?')){voidOrder(id);}});
     }
+    mk('mb-edit','✏ ແກ້ໄຂ',function(){closeQM();openEdit(id);});
     mk('mb-rcpt','🧾 ໃບ',function(){closeQM();showR(id);});
   }
   var m=document.getElementById('q-modal');if(m)m.classList.add('on');
