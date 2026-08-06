@@ -1375,18 +1375,18 @@ function renderQ(){
     if(pA!==pB)return pA.localeCompare(pB);
     return (a.id||'').localeCompare(b.id||'');
   }
-  var rushOrds=all.filter(function(o){return o.isRush;}).sort(sortOrd);
-  var fifoOrds=all.filter(function(o){return!o.isRush;}).sort(sortOrd);
+  var rushOrds=all.filter(function(o){return o.isRush&&o.status!=='done';}).sort(sortOrd);
+  var fifoOrds=all.filter(function(o){return!o.isRush&&o.status!=='done';}).sort(sortOrd);
   var activeAll=all.filter(function(o){return o.status!=='done';});
   var doneAll=all.filter(function(o){return o.status==='done';});
 
   // Stats
   var qs=document.getElementById('q-stats');
   if(qs)qs.innerHTML=
-    '<div class="qs-box"><span class="qs-n" style="color:var(--red)">'+rushOrds.filter(function(o){return o.status!=='done';}).length+'</span><span class="qs-l">⚡ Rush</span></div>'+
-    '<div class="qs-box"><span class="qs-n">'+fifoOrds.filter(function(o){return o.status!=='done';}).length+'</span><span class="qs-l">📋 ຄິວ</span></div>'+
+    '<div class="qs-box"><span class="qs-n" style="color:var(--red)">'+rushOrds.length+'</span><span class="qs-l">⚡ Rush</span></div>'+
+    '<div class="qs-box"><span class="qs-n">'+fifoOrds.length+'</span><span class="qs-l">📋 ຄິວ</span></div>'+
     '<div class="qs-box"><span class="qs-n" style="color:var(--amber)">'+activeAll.filter(function(o){return o.status==='in-progress';}).length+'</span><span class="qs-l">ດໍາເນີນ</span></div>'+
-    '<div class="qs-box"><span class="qs-n" style="color:var(--green)">'+doneAll.length+'</span><span class="qs-l">ສໍາເລັດ</span></div>';
+    '<div class="qs-box"><span class="qs-n" style="color:var(--green)">'+doneAll.length+'</span><span class="qs-l">✓ Dashboard</span></div>';
 
   var ct=document.getElementById('q-days');if(!ct)return;ct.innerHTML='';
 
