@@ -1367,13 +1367,13 @@ function renderQ(){
     if(tl){var td=new Date();tl.textContent='ວັນນີ້: '+td.toLocaleDateString('lo-LA',{weekday:'long',day:'numeric',month:'long'});}
   }catch(ex){}
 
-  // Sort: active first, then by queueDate asc, then by createdAt asc
+  // Sort: active first, then by pickup/due date asc, then by order ID asc
   function sortOrd(a,b){
     var aD=a.status==='done'?1:0,bD=b.status==='done'?1:0;
     if(aD!==bD)return aD-bD;
-    var qA=a.queueDate||a.deliveryDate||'',qB=b.queueDate||b.deliveryDate||'';
-    if(qA!==qB)return qA.localeCompare(qB);
-    return new Date(a.createdAt)-new Date(b.createdAt);
+    var pA=a.pickupDate||a.deliveryDate||'',pB=b.pickupDate||b.deliveryDate||'';
+    if(pA!==pB)return pA.localeCompare(pB);
+    return (a.id||'').localeCompare(b.id||'');
   }
   var rushOrds=all.filter(function(o){return o.isRush;}).sort(sortOrd);
   var fifoOrds=all.filter(function(o){return!o.isRush;}).sort(sortOrd);
@@ -1384,7 +1384,7 @@ function renderQ(){
   var qs=document.getElementById('q-stats');
   if(qs)qs.innerHTML=
     '<div class="qs-box"><span class="qs-n" style="color:var(--red)">'+rushOrds.filter(function(o){return o.status!=='done';}).length+'</span><span class="qs-l">⚡ Rush</span></div>'+
-    '<div class="qs-box"><span class="qs-n">'+fifoOrds.filter(function(o){return o.status!=='done';}).length+'</span><span class="qs-l">📋 FIFO</span></div>'+
+    '<div class="qs-box"><span class="qs-n">'+fifoOrds.filter(function(o){return o.status!=='done';}).length+'</span><span class="qs-l">📋 ຄິວ</span></div>'+
     '<div class="qs-box"><span class="qs-n" style="color:var(--amber)">'+activeAll.filter(function(o){return o.status==='in-progress';}).length+'</span><span class="qs-l">ດໍາເນີນ</span></div>'+
     '<div class="qs-box"><span class="qs-n" style="color:var(--green)">'+doneAll.length+'</span><span class="qs-l">ສໍາເລັດ</span></div>';
 
@@ -1403,7 +1403,7 @@ function renderQ(){
   // FIFO section
   var fsec=document.createElement('div');fsec.className='q-section';
   fsec.innerHTML=
-    '<div class="q-section-head qs-fifo-head">📋 FIFO <span style="font-weight:400;opacity:.55;font-size:.65rem">ສາຍປົກກະຕິ</span><span class="q-section-count">'+fifoOrds.length+' ລາຍການ</span></div>'+
+    '<div class="q-section-head qs-fifo-head">📋 ຄິວ <span style="font-weight:400;opacity:.55;font-size:.65rem">ຮຽງຕາມວັນສົ່ງ</span><span class="q-section-count">'+fifoOrds.length+' ລາຍການ</span></div>'+
     '<div class="q-section-body qs-fifo-body">'+
       (fifoOrds.length?fifoOrds.map(function(o,i){return qCard(o,i,'fifo');}).join(''):
         '<div class="day-empty">ບໍ່ມີຄໍາສັ່ງ</div>')+
