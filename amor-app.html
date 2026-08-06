@@ -617,6 +617,8 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
       <div class="field"><label class="lbl">ເບີໂທ</label><input type="tel" id="em-phone" class="inp"></div>
       <div class="field"><label class="lbl">📦 ວັນຜະລິດ</label><input type="date" id="em-queue" class="inp"></div>
       <div class="field"><label class="lbl">🚚 ວັນຮັບສິນຄ້າ</label><input type="date" id="em-pickup" class="inp"></div>
+      <div class="em-sec">⚡ Rush</div>
+      <button id="em-rush-btn" class="mbtn mb-undo" onclick="setEmRush()" style="width:100%;margin-bottom:2px"></button>
       <div id="em-items"></div>
       <div id="em-products"></div>
       <div id="em-extras"></div>
@@ -815,21 +817,21 @@ function nextWorkDay(fromDate,skipDays){
   var d=new Date(fromDate+'T12:00:00');
   if(skipDays>0) d.setDate(d.getDate()+1);
   for(var i=0;i<30;i++){
-    if(d.getDay()!==0&&d.getDay()!==6) return d.toISOString().split('T')[0];
+    if(d.getDay()!==0) return d.toISOString().split('T')[0];
     d.setDate(d.getDate()+1);
   }
   return fromDate;
 }
 function addWorkDays(fromDate,n){
   var d=new Date(fromDate+'T12:00:00'),added=0;
-  while(added<n){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)added++;}
+  while(added<n){d.setDate(d.getDate()+1);if(d.getDay()!==0)added++;}
   return d.toISOString().split('T')[0];
 }
 function workDaysLeft(fromDate,toDate){
   var d=new Date(fromDate+'T12:00:00');
   var end=new Date(toDate+'T12:00:00');
   var count=0;
-  while(d<end){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)count++;}
+  while(d<end){d.setDate(d.getDate()+1);if(d.getDay()!==0)count++;}
   return count;
 }
 function calDaysLeft(toDate){
@@ -850,7 +852,7 @@ function nextAvailSlot(rush){
   var d=new Date(start+'T12:00:00');
   for(var i=0;i<60;i++){
     var ds=d.toISOString().split('T')[0];
-    if(d.getDay()!==0&&d.getDay()!==6){
+    if(d.getDay()!==0){
       var used=ord.filter(function(o){return o.queueDate===ds&&!o.isRush;}).length;
       if(used<CAP) return ds;
     }
@@ -1477,12 +1479,26 @@ function unvoidOrder(id){
 // ─────────────────────────────────────────────────
 // EDIT ORDER MODAL
 // ─────────────────────────────────────────────────
-var editId=null;
+var editId=null,emRush=false;
+function setEmRush(){
+  emRush=!emRush;
+  var b=document.getElementById('em-rush-btn');
+  if(!b)return;
+  if(emRush){b.textContent='⚡ Rush — ຄ່າດ່ວນ ฿'+RUSH_FEE+' (ກົດເພື່ອຍົກເລີກ)';b.className='mbtn mb-prog';}
+  else{b.textContent='ທຳມະດາ — ກົດເພື່ອຕັ້ງ Rush';b.className='mbtn mb-undo';}
+}
+function syncEmRushBtn(){
+  var b=document.getElementById('em-rush-btn');
+  if(!b)return;
+  if(emRush){b.textContent='⚡ Rush — ຄ່າດ່ວນ ฿'+RUSH_FEE+' (ກົດເພື່ອຍົກເລີກ)';b.className='mbtn mb-prog';}
+  else{b.textContent='ທຳມະດາ — ກົດເພື່ອຕັ້ງ Rush';b.className='mbtn mb-undo';}
+}
 function openEdit(id){
   var a=loadO(),o=null;
   for(var i=0;i<a.length;i++){if(a[i].id===id){o=a[i];break;}}
   if(!o)return;
   editId=id;
+  emRush=o.isRush||false;
   document.getElementById('em-title').textContent='#'+id;
   document.getElementById('em-name').value=o.clientName||'';
   document.getElementById('em-phone').value=o.contactNumber||'';
@@ -1561,6 +1577,7 @@ function openEdit(id){
   if(dv)dv.value=o.discountValue||0;
 
   var m=document.getElementById('edit-modal');if(m)m.classList.add('on');
+  syncEmRushBtn();
 }
 
 function closeEM(){var m=document.getElementById('edit-modal');if(m)m.classList.remove('on');}
@@ -1580,6 +1597,9 @@ function saveEdit(){
     o.queueDate=(document.getElementById('em-queue')||{value:''}).value||o.queueDate;
     o.pickupDate=(document.getElementById('em-pickup')||{value:''}).value||o.pickupDate;
     o.deliveryDate=o.pickupDate; // keep in sync
+    // Rush status
+    o.isRush=emRush;
+    o.rushFee=emRush?RUSH_FEE:0;
 
     // Embroidery items
     if(o.items&&o.items.length){
@@ -1801,9 +1821,10 @@ function renderD(){
     else if(ps==='partial'){totalCol+=(ord[i].partialAmountTHB||0);totalOut+=tot-(ord[i].partialAmountTHB||0);}
     else{totalOut+=tot;}
   }
+  var nonVoided=ord.filter(function(o){return o.status!=='voided';}).length;
   var ds=document.getElementById('db-stats');
   if(ds)ds.innerHTML=
-    '<div class="st-card"><span class="st-n">'+ord.length+'</span><span class="st-l">ຄໍາສັ່ງ</span></div>'+
+    '<div class="st-card"><span class="st-n">'+nonVoided+'</span><span class="st-l">ຄໍາສັ່ງ</span></div>'+
     '<div class="st-card"><span class="st-n">'+totalPcs+'</span><span class="st-l">ຊິ້ນ</span></div>'+
     '<div class="st-card"><span class="st-n" style="color:var(--green)">'+dn+'</span><span class="st-l">ສໍາເລັດ</span></div>'+
     '<div class="st-card"><span class="st-n" style="font-size:.88rem">'+baht(totalCol+totalOut)+'</span><span class="st-l">ມູນຄ່າ</span></div>';
@@ -1813,8 +1834,10 @@ function renderD(){
     '<div class="pay-half"><span class="ph-lbl">ຄ້າງຮັບ</span><span class="ph-val ph-out">'+baht(totalOut)+'</span><span class="ph-sub">'+lak(toLak(totalOut))+'</span></div>'+
     '</div>';
 
+  var voidedCount=sorted.filter(function(o){return o.status==='voided';}).length;
   var lm={today:'ວັນນີ້',week:'ອາທິດ',month:'ເດືອນ',all:'ທັງໝົດ'};
-  var dl=document.getElementById('db-lbl');if(dl)dl.textContent=(lm[dbFilt]||'ຄໍາສັ່ງ')+' ('+sorted.length+')';
+  var dl=document.getElementById('db-lbl');
+  if(dl)dl.textContent=(lm[dbFilt]||'ຄໍາສັ່ງ')+' ('+nonVoided+(voidedCount?' +'+voidedCount+' void':'')+')';
   var lst=document.getElementById('db-list');if(!lst)return;
   if(!sorted.length){lst.innerHTML=strip+'<div class="empty"><div class="ei">📋</div><div style="font-size:.85rem">ຍັງບໍ່ມີ</div></div>';return;}
 
