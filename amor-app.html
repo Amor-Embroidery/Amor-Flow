@@ -228,10 +228,20 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
 .fp-btn{flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--border);background:#fff;
   font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--navy);}
 .fp-btn.on{background:var(--navy);color:#fff;border-color:var(--navy);}
-.db-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;}
+/* month select */
+.mo-sel{width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);
+  font-family:inherit;font-size:.74rem;font-weight:600;color:var(--navy);background:#fff;
+  cursor:pointer;margin-bottom:8px;}
+/* archive */
+.arch-hd{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px;background:var(--card);border:1.5px solid var(--border);
+  border-radius:10px;margin:10px 0 6px;font-size:.75rem;font-weight:700;
+  color:var(--navy);cursor:pointer;user-select:none;}
+.arch-arrow{font-size:.65rem;color:var(--muted);}
+.db-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+.st-n{display:block;font-size:1.15rem;font-weight:700;color:var(--navy);}
+.st-l{display:block;font-size:.54rem;color:var(--muted);margin-top:2px;line-height:1.3;}
 .st-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:13px;text-align:center;}
-.st-n{display:block;font-size:1.4rem;font-weight:700;color:var(--navy);}
-.st-l{display:block;font-size:.6rem;color:var(--muted);margin-top:2px;}
 .pay-strip{display:flex;gap:8px;margin-bottom:10px;}
 .pay-half{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--border);text-align:center;background:var(--card);}
 .ph-lbl{display:block;font-size:.6rem;color:var(--muted);margin-bottom:3px;}
@@ -578,11 +588,12 @@ body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;fle
 <!-- ══ DASHBOARD PAGE ══ -->
 <div class="page" id="page-dashboard">
   <div class="fp-row">
-    <button class="fp-btn on" onclick="setFilt('all',this)">ທັງໝົດ</button>
-    <button class="fp-btn" onclick="setFilt('month',this)">ເດືອນ</button>
-    <button class="fp-btn" onclick="setFilt('week',this)">ອາທິດ</button>
-    <button class="fp-btn" onclick="setFilt('today',this)">ວັນນີ້</button>
+    <button class="fp-btn on" id="fp-today" onclick="setFilt('today',this)">ວັນນີ້</button>
+    <button class="fp-btn" id="fp-week"  onclick="setFilt('week',this)">ອາທິດ</button>
+    <button class="fp-btn" id="fp-month" onclick="setFilt('month',this)">ເດືອນນີ້</button>
+    <button class="fp-btn" id="fp-all"   onclick="setFilt('all',this)">ທັງໝົດ</button>
   </div>
+  <div class="fp-months" id="fp-months"></div>
   <div class="db-stats" id="db-stats"></div>
   <span class="db-lbl-text" id="db-lbl">ຄໍາສັ່ງ</span>
   <div id="db-list"></div>
@@ -1077,41 +1088,49 @@ function renderExtraProds(){
   var el=document.getElementById('extra-prods-list');if(!el)return;
   if(!extraProds.length){el.innerHTML='';return;}
   el.innerHTML=extraProds.map(function(e,i){
-    return'<div class="extra-row">'+
-      '<input class="extra-name" type="text" id="ep-name-'+i+'" placeholder="ຊື່ສິນຄ້າ" value="'+e.name.replace(/"/g,'&quot;')+'" oninput="updExtraProd('+i+')">'+
-      '<div style="position:relative;width:95px;flex-shrink:0">'+
-        '<span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:.75rem;color:var(--muted);pointer-events:none">₭</span>'+
-        '<input class="extra-price" type="number" id="ep-price-'+i+'" placeholder="0" min="0" value="'+(e.priceLAK||'')+'" oninput="updExtraProd('+i+')" style="padding-left:20px;width:100%;box-sizing:border-box">'+
+    return'<div style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">'+
+      '<div class="extra-row" style="margin-bottom:6px">'+
+        '<input class="extra-name" type="text" id="ep-name-'+i+'" placeholder="ຊື່ສິນຄ້າ *" value="'+e.name.replace(/"/g,'&quot;')+'" oninput="updExtraProd('+i+')">'+
+        '<div style="position:relative;width:95px;flex-shrink:0">'+
+          '<span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:.75rem;color:var(--muted);pointer-events:none">₭</span>'+
+          '<input class="extra-price" type="number" id="ep-price-'+i+'" placeholder="0" min="0" value="'+(e.priceLAK||'')+'" oninput="updExtraProd('+i+')" style="padding-left:20px;width:100%;box-sizing:border-box">'+
+        '</div>'+
+        '<button class="extra-del" onclick="removeExtraProd('+i+')">✕</button>'+
       '</div>'+
-      '<button class="extra-del" onclick="removeExtraProd('+i+')">✕</button>'+
+      '<textarea id="ep-det-'+i+'" rows="2" placeholder="ລາຍລະອຽດ / Details (ຖ້າມີ)" oninput="updExtraProd('+i+')" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.82rem;resize:vertical;background:#fff;outline:none">'+esc(e.details||'')+'</textarea>'+
     '</div>';
   }).join('');
 }
-function addExtraProd(){extraProds.push({name:'',priceLAK:0});renderExtraProds();updOrderTotal();}
+function addExtraProd(){extraProds.push({name:'',priceLAK:0,details:''});renderExtraProds();updOrderTotal();}
 function removeExtraProd(i){extraProds.splice(i,1);renderExtraProds();updOrderTotal();}
 function updExtraProd(i){
   var n=document.getElementById('ep-name-'+i);
   var p=document.getElementById('ep-price-'+i);
-  if(extraProds[i]){extraProds[i].name=n?n.value:'';extraProds[i].priceLAK=p?parseFloat(p.value)||0:0;}
+  var d=document.getElementById('ep-det-'+i);
+  if(extraProds[i]){extraProds[i].name=n?n.value:'';extraProds[i].priceLAK=p?parseFloat(p.value)||0:0;extraProds[i].details=d?d.value:'';}
   updOrderTotal();
 }
 function renderExtras(){
   var el=document.getElementById('extras-list');if(!el)return;
   if(!extras.length){el.innerHTML='';return;}
   el.innerHTML=extras.map(function(e,i){
-    return'<div class="extra-row">'+
-      '<input class="extra-name" type="text" id="ex-name-'+i+'" placeholder="ຊື່ບໍລິການ" value="'+e.name.replace(/"/g,'&quot;')+'" oninput="updExtra('+i+')">'+
-      '<input class="extra-price" type="number" id="ex-price-'+i+'" placeholder="฿" min="0" value="'+(e.price||'')+'" oninput="updExtra('+i+')">'+
-      '<button class="extra-del" onclick="removeExtra('+i+')">✕</button>'+
+    return'<div style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">'+
+      '<div class="extra-row" style="margin-bottom:6px">'+
+        '<input class="extra-name" type="text" id="ex-name-'+i+'" placeholder="ຊື່ບໍລິການ *" value="'+e.name.replace(/"/g,'&quot;')+'" oninput="updExtra('+i+')">'+
+        '<input class="extra-price" type="number" id="ex-price-'+i+'" placeholder="฿" min="0" value="'+(e.price||'')+'" oninput="updExtra('+i+')">'+
+        '<button class="extra-del" onclick="removeExtra('+i+')">✕</button>'+
+      '</div>'+
+      '<textarea id="ex-det-'+i+'" rows="2" placeholder="ລາຍລະອຽດ / Details (ຖ້າມີ)" oninput="updExtra('+i+')" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.82rem;resize:vertical;background:#fff;outline:none">'+esc(e.details||'')+'</textarea>'+
     '</div>';
   }).join('');
 }
-function addExtra(){extras.push({name:'',price:0});renderExtras();updOrderTotal();}
+function addExtra(){extras.push({name:'',price:0,details:''});renderExtras();updOrderTotal();}
 function removeExtra(i){extras.splice(i,1);renderExtras();updOrderTotal();}
 function updExtra(i){
   var n=document.getElementById('ex-name-'+i);
   var p=document.getElementById('ex-price-'+i);
-  if(extras[i]){extras[i].name=n?n.value:'';extras[i].price=p?parseFloat(p.value)||0:0;}
+  var d=document.getElementById('ex-det-'+i);
+  if(extras[i]){extras[i].name=n?n.value:'';extras[i].price=p?parseFloat(p.value)||0:0;extras[i].details=d?d.value:'';}
   updOrderTotal();
 }
 function calcDisc(subtotal){
@@ -1236,7 +1255,10 @@ function doSubmit(mode){
   var subtotal=base+(isRush?RUSH_FEE:0)+prodTotal()+extrasTot+epTot;
   var discAmt=calcDisc(subtotal);
   var tot=Math.max(0,subtotal-discAmt);
-  var totalPcs=items.reduce(function(s,it){return s+it.quantity;},0);
+  var totalPcs=items.reduce(function(s,it){return s+it.quantity;},0)
+    +savedProds.reduce(function(s,p){return s+(p.qty||0);},0)
+    +extraProds.filter(function(e){return e.name;}).length
+    +extras.filter(function(e){return e.name;}).length;
   var label=items.length?items[0].designType+' ('+items[0].sizeCm+' cm)'+(items.length>1?' +'+(items.length-1)+' ລາຍການ':''):
     savedProds.length?savedProds[0].name+(savedProds.length>1?' +'+(savedProds.length-1)+' ສິນຄ້າ':''):'ສິນຄ້າ/ບໍລິການ';
 
@@ -1334,7 +1356,7 @@ function goPage(pg){
   var tn=document.getElementById('tb-new');if(tn)tn.style.display=pg==='queue'?'inline-block':'none';
   prevPage=curPage;curPage=pg;
   if(pg==='queue')renderQ();
-  if(pg==='dashboard')renderD();
+  if(pg==='dashboard'){buildMonthBtns();renderD();}
 
   // When navigating TO order form, rebuild items from current cart
   if(pg==='order'){
@@ -1718,8 +1740,8 @@ function openQM(id){
       }).join(''):'');
       return mr('🛍 '+p.name+' ×'+p.qty,lak(p.subtotalLAK)+' ≈'+baht(p.subtotalTHB))+unitHtml;
     }).join(''):'')+
-    (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return mr('🛍 '+e.name,lak(e.priceLAK||0)+' ≈'+baht(pToTHB(e.priceLAK||0)));}).join(''):'')+
-    (o.extras&&o.extras.length?o.extras.map(function(e){return mr('➕ '+e.name,baht(e.price));}).join(''):'')+
+    (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return mr('🛍 '+e.name,lak(e.priceLAK||0)+' ≈'+baht(pToTHB(e.priceLAK||0)))+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');}).join(''):'')+
+    (o.extras&&o.extras.length?o.extras.map(function(e){return mr('➕ '+e.name,baht(e.price))+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');}).join(''):'')+
     (o.discountAmount>0?mr('🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':''),'<span style="color:var(--green)">- '+baht(o.discountAmount)+'</span>'):'')+
     mr('ລາຄາລວມ',baht(tot)+' · '+lak(toLak(tot)))+
     mr('ສະກຸນ',o.payCurrency||'THB')+
@@ -1801,20 +1823,64 @@ function filtO(a){
   var t=tday(),now=new Date(),dow=now.getDay();
   var mon=new Date(now);mon.setDate(now.getDate()-(dow===0?6:dow-1));
   var ws=mon.toISOString().split('T')[0],mo=now.toISOString().substring(0,7);
-  if(dbFilt==='today')return a.filter(function(o){var qd=o.queueDate||o.deliveryDate||'';return qd===t||(o.createdAt&&o.createdAt.startsWith(t));});
-  if(dbFilt==='week') return a.filter(function(o){var qd=o.queueDate||o.deliveryDate||'';return qd>=ws;});
-  if(dbFilt==='month')return a.filter(function(o){var qd=o.queueDate||o.deliveryDate||'';return qd.startsWith(mo)||(o.createdAt&&o.createdAt.startsWith(mo));});
-  return a;
+  if(dbFilt==='today') return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(t);});
+  if(dbFilt==='week')  return a.filter(function(o){var d=(o.createdAt||'').substring(0,10);return d>=ws;});
+  if(dbFilt==='month') return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(mo);});
+  if(/^\d{4}-\d{2}$/.test(dbFilt)) return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(dbFilt);});
+  return a; // 'all'
 }
-function setFilt(f,btn){dbFilt=f;var bs=document.querySelectorAll('.fp-btn');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');if(btn)btn.classList.add('on');renderD();}
+function setFilt(f,btn){
+  dbFilt=f;
+  var bs=document.querySelectorAll('.fp-btn');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');
+  if(btn)btn.classList.add('on');
+  var ms=document.getElementById('fp-months');if(ms){var s=ms.querySelector('select');if(s)s.value='';}
+  renderD();
+}
+function setFiltMo(val){
+  if(!val)return;
+  dbFilt=val;
+  var bs=document.querySelectorAll('.fp-btn');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');
+  renderD();
+}
+function buildMonthBtns(){
+  var el=document.getElementById('fp-months');if(!el)return;
+  var now=new Date();
+  var isMo=/^\d{4}-\d{2}$/.test(dbFilt);
+  var opts='<option value="">📅 ເລືອກເດືອນ...</option>';
+  for(var i=0;i<12;i++){
+    var d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    var val=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    var label=d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    opts+='<option value="'+val+'"'+(isMo&&dbFilt===val?' selected':'')+'>'+label+'</option>';
+  }
+  el.innerHTML='<select class="mo-sel" onchange="setFiltMo(this.value)">'+(isMo?opts:opts)+'</select>';
+  // Reset select to blank when a quick-filter is active
+  if(!isMo){var s=el.querySelector('select');if(s)s.value='';}
+}
+
+var archiveOpen=false;
+function toggleArch(){
+  archiveOpen=!archiveOpen;
+  var al=document.getElementById('arch-list');
+  var ar=document.getElementById('arch-arrow');
+  if(al)al.style.display=archiveOpen?'block':'none';
+  if(ar)ar.textContent=archiveOpen?'▲':'▼';
+}
 
 function renderD(){
+  buildMonthBtns();
   var all=loadO(),ord=filtO(all);
   var sorted=ord.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
   var totalPcs=0,dn=0,totalCol=0,totalOut=0;
   for(var i=0;i<ord.length;i++){
-    if(ord[i].status==='voided')continue; // exclude voided from all totals
-    totalPcs+=(ord[i].pieces||0);if(ord[i].status==='done')dn++;
+    if(ord[i].status==='voided')continue;
+    var o=ord[i];
+    var embPcs=(o.items||[]).reduce(function(s,it){return s+(it.quantity||0);},0);
+    var prodPcs=(o.products||[]).reduce(function(s,p){return s+(p.qty||0);},0);
+    var epPcs=(o.extraProducts||[]).filter(function(e){return e.name;}).length;
+    var exPcs=(o.extras||[]).filter(function(e){return e.name;}).length;
+    totalPcs+=embPcs+prodPcs+epPcs+exPcs;
+    if(o.status==='done')dn++;
     var tot=ord[i].totalTHB||ord[i].total||0;
     var ps=ord[i].payStatus||(ord[i].fullyPaid?'paid':'unpaid');
     if(ps==='paid'){totalCol+=tot;}
@@ -1822,12 +1888,13 @@ function renderD(){
     else{totalOut+=tot;}
   }
   var nonVoided=ord.filter(function(o){return o.status!=='voided';}).length;
+  var undone=nonVoided-dn;
   var ds=document.getElementById('db-stats');
   if(ds)ds.innerHTML=
-    '<div class="st-card"><span class="st-n">'+nonVoided+'</span><span class="st-l">ຄໍາສັ່ງ</span></div>'+
-    '<div class="st-card"><span class="st-n">'+totalPcs+'</span><span class="st-l">ຊິ້ນ</span></div>'+
-    '<div class="st-card"><span class="st-n" style="color:var(--green)">'+dn+'</span><span class="st-l">ສໍາເລັດ</span></div>'+
-    '<div class="st-card"><span class="st-n" style="font-size:.88rem">'+baht(totalCol+totalOut)+'</span><span class="st-l">ມູນຄ່າ</span></div>';
+    '<div class="st-card"><span class="st-n">'+nonVoided+'</span><span class="st-l">Order In</span></div>'+
+    '<div class="st-card"><span class="st-n" style="color:var(--green)">'+dn+'</span><span class="st-l">Order Made</span></div>'+
+    '<div class="st-card"><span class="st-n" style="color:var(--amber)">'+undone+'</span><span class="st-l">ຄ້າງ</span></div>'+
+    '<div class="st-card"><span class="st-n" style="font-size:.82rem">'+baht(totalCol+totalOut)+'</span><span class="st-l">ມູນຄ່າ</span></div>';
 
   var strip='<div class="pay-strip">'+
     '<div class="pay-half"><span class="ph-lbl">ໄດ້ຮັບ</span><span class="ph-val ph-col">'+baht(totalCol)+'</span><span class="ph-sub">'+lak(toLak(totalCol))+'</span></div>'+
@@ -1835,17 +1902,22 @@ function renderD(){
     '</div>';
 
   var voidedCount=sorted.filter(function(o){return o.status==='voided';}).length;
-  var lm={today:'ວັນນີ້',week:'ອາທິດ',month:'ເດືອນ',all:'ທັງໝົດ'};
+  var lm={today:'ວັນນີ້',week:'ອາທິດ',month:'ເດືອນນີ້',all:'ທັງໝົດ'};
+  var periodLabel=/^\d{4}-\d{2}$/.test(dbFilt)
+    ?(function(){var d=new Date(dbFilt+'-01');return d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});}())
+    :(lm[dbFilt]||'');
   var dl=document.getElementById('db-lbl');
-  if(dl)dl.textContent=(lm[dbFilt]||'ຄໍາສັ່ງ')+' ('+nonVoided+(voidedCount?' +'+voidedCount+' void':'')+')';
+  if(dl)dl.textContent=periodLabel+' ('+nonVoided+(voidedCount?' +'+voidedCount+' void':'')+')';
   var lst=document.getElementById('db-list');if(!lst)return;
   if(!sorted.length){lst.innerHTML=strip+'<div class="empty"><div class="ei">📋</div><div style="font-size:.85rem">ຍັງບໍ່ມີ</div></div>';return;}
 
   var sc={new:'p-new','in-progress':'p-prog',done:'p-done',voided:'p-void'};
   var sx={new:'ໃໝ່','in-progress':'ດໍາເນີນ',done:'ສໍາເລັດ',voided:'ຍົກເລີກ'};
-  lst.innerHTML=strip+sorted.map(function(o){
+
+  function makeRow(o){
     var tot=o.totalTHB||o.total||0;
     var isVoided=o.status==='voided';
+    var isDone=o.status==='done';
     var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
     var payBadge='',payActs='';
     if(isVoided){
@@ -1863,11 +1935,13 @@ function renderD(){
       payBadge='<span class="pill-pay pp-none">ຍັງບໍ່ໄດ້ຮັບ</span>';
       payActs='<button class="pbtn pbtn-full" onclick="event.stopPropagation();setPay(\''+o.id+'\',\'paid\',0)">✓ ຮັບຄົບ</button>';
     }
-    var itemLine=o.items&&o.items.length?o.items.map(function(it){return it.designType+' '+it.sizeCm+'cm';}).join(', '):o.serviceName||'';
-    return'<div class="ord-row'+(isVoided?' voided':'')+'"'+'>'+
+    // Only show days-left badge for active (non-done, non-voided) orders
+    var dlBadge=(!isDone&&!isVoided)?daysLeftBadge(o.pickupDate||o.deliveryDate):'';
+    var itemLine=o.items&&o.items.length?o.items.map(function(it){return it.designType+' '+it.sizeCm+'cm';}).join(', '):(o.serviceName||'');
+    return'<div class="ord-row'+(isVoided?' voided':'')+'" onclick="openQM(\''+o.id+'\')">'+
       '<div style="display:flex;align-items:flex-start;gap:10px">'+
         '<div style="flex:1;min-width:0">'+
-          '<div class="or-id'+(isVoided?' void-line':'')+'">#'+o.id+(o.isRush?' ⚡':'')+' · ຮັບ '+fdateShort(o.pickupDate||o.deliveryDate)+(isVoided?'':daysLeftBadge(o.pickupDate||o.deliveryDate))+'</div>'+
+          '<div class="or-id'+(isVoided?' void-line':'')+'">#'+o.id+(o.isRush?' ⚡':'')+' · ຮັບ '+fdateShort(o.pickupDate||o.deliveryDate)+dlBadge+'</div>'+
           '<div class="or-name'+(isVoided?' void-line':'')+'">' +o.clientName+'</div>'+
           '<div class="or-det">'+itemLine+'</div>'+
           '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">'+
@@ -1877,14 +1951,35 @@ function renderD(){
         '<div style="text-align:right;flex-shrink:0">'+
           '<div class="or-total'+(isVoided?' void-line':'')+'">'+(isVoided?'<s>'+baht(tot)+'</s>':baht(tot))+'</div>'+
           '<div class="or-lak">'+(isVoided?'':lak(toLak(tot)))+'</div>'+
-          '<button class="or-btn" onclick="showR(\''+o.id+'\')">🧾 ໃບ</button>'+
+          '<button class="or-btn" onclick="event.stopPropagation();showR(\''+o.id+'\')">🧾 ໃບ</button>'+
         '</div>'+
       '</div>'+
-      '<div style="border-top:1px solid var(--border);padding-top:7px;margin-top:8px">'+
+      '<div style="border-top:1px solid var(--border);padding-top:7px;margin-top:8px" onclick="event.stopPropagation()">'+
         '<div class="pay-actions">'+payActs+'</div>'+
       '</div>'+
     '</div>';
-  }).join('');
+  }
+
+  // Split active orders (new/in-progress/voided) from archive (done)
+  var activeOrds=sorted.filter(function(o){return o.status!=='done';});
+  var archiveOrds=sorted.filter(function(o){return o.status==='done';});
+
+  var activeHtml=activeOrds.length
+    ?activeOrds.map(makeRow).join('')
+    :'<div class="empty" style="padding:20px 0"><div class="ei">✓</div><div style="font-size:.82rem">ບໍ່ມີຄໍາສັ່ງຄ້າງ</div></div>';
+
+  var archSec='';
+  if(archiveOrds.length){
+    archSec='<div class="arch-hd" onclick="toggleArch()">'+
+      '📦 Archive — ສຳເລັດ ('+archiveOrds.length+')'+
+      '<span class="arch-arrow" id="arch-arrow">'+(archiveOpen?'▲':'▼')+'</span>'+
+    '</div>'+
+    '<div id="arch-list" style="display:'+(archiveOpen?'block':'none')+'">'+
+      archiveOrds.map(makeRow).join('')+
+    '</div>';
+  }
+
+  lst.innerHTML=strip+activeHtml+archSec;
 }
 
 // ─────────────────────────────────────────────────
