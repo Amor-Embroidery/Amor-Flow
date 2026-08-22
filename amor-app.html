@@ -328,6 +328,7 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 .receipt-actions{display:flex;gap:8px;padding:10px 16px;border-top:1.5px solid var(--border);flex-shrink:0;}
 .ra-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);
   font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;background:var(--card);}
+.ra-btn-share{background:#25D366;color:#fff;border-color:#25D366;}
 #pzone{padding:12px 16px;overflow-y:auto;flex:1;}
 .receipt{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;max-width:320px;margin:0 auto;}
 .r-head{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:2px solid var(--navy);}
@@ -671,6 +672,7 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
     <div class="modal-hd">ໃບຮັບເງິນ · Receipt<button onclick="closeRM()">✕</button></div>
     <div id="pzone"></div>
     <div class="receipt-actions">
+      <button class="ra-btn ra-btn-share" onclick="shareR()">📤 ແບ່ງປັນ</button>
       <button class="ra-btn" onclick="window.print()">🖨 ພິມ</button>
       <button class="ra-btn" onclick="closeRM()">ປິດ</button>
     </div>
@@ -2037,10 +2039,71 @@ function renderD(){
 // ─────────────────────────────────────────────────
 // RECEIPT
 // ─────────────────────────────────────────────────
+var curReceiptOrder=null;
+
+function buildShareText(o){
+  var tot=o.totalTHB||o.total||0;
+  var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
+  var lines=['🧵 ຮ້ານອະມໍປັກຊື່',''];
+  lines.push('ໃບຮັບເງິນ · Receipt  #'+o.id+(o.isRush?' ⚡':''));
+  lines.push('──────────────────');
+  lines.push('👤 '+o.clientName);
+  if(o.contactNumber)lines.push('📱 '+o.contactNumber);
+  lines.push('📅 ວັນຮັບ: '+fdateShort(o.pickupDate||o.deliveryDate));
+  lines.push('──────────────────');
+  if(o.items&&o.items.length){
+    o.items.forEach(function(it){
+      lines.push('• '+it.designType+' '+it.sizeCm+'cm  ×'+it.quantity+'   '+baht(it.subtotalTHB));
+      if(it.embroideryDetails)lines.push('  "'+it.embroideryDetails+'"');
+      if(it.font||it.thread)lines.push('  '+(it.font?'Font: '+it.font:'')+(it.font&&it.thread?' · ':'')+(it.thread?it.thread:''));
+    });
+  }else if(o.serviceName){
+    lines.push('• '+o.serviceName+'  ×'+(o.pieces||1)+'   '+baht(tot));
+  }
+  if(o.products&&o.products.length){
+    o.products.forEach(function(p){
+      lines.push('🛍 '+p.name+'  ×'+p.qty+'   '+lak(p.subtotalLAK));
+      if(p.units&&p.units.length){
+        p.units.forEach(function(u,i){
+          if(u.word)lines.push('  '+(p.qty>1?'ອັນ'+(i+1)+': ':'')+u.word+(u.font?' · '+u.font:'')+(u.thread?' · '+u.thread:''));
+        });
+      }
+    });
+  }
+  if(o.extraProducts&&o.extraProducts.length){
+    o.extraProducts.forEach(function(e){if(e.name)lines.push('🛍 '+e.name+'   '+lak(e.priceLAK||0));});
+  }
+  if(o.extras&&o.extras.length){
+    o.extras.forEach(function(e){if(e.name)lines.push('➕ '+e.name+'   '+baht(e.price));});
+  }
+  if(o.isRush)lines.push('⚡ Rush fee   '+baht(o.rushFee||300));
+  if(o.discountAmount>0)lines.push('🏷 ສ່ວນຫຼຸດ   -'+baht(o.discountAmount));
+  lines.push('──────────────────');
+  lines.push('💰 ລວມ: '+baht(tot)+'  ('+lak(toLak(tot))+')');
+  if(ps==='paid')lines.push('✅ ຊໍາລະຄົບ');
+  else if(ps==='partial'){var pa=o.partialAmountTHB||0;lines.push('⚠️ ຄ້າງ: '+baht(tot-pa));}
+  else lines.push('❌ ຍັງບໍ່ໄດ້ຮັບ');
+  lines.push('');
+  lines.push('ຂອບໃຈທີ່ໃຊ້ບໍລິການ 🙏');
+  return lines.join('\n');
+}
+
+function shareR(){
+  if(!curReceiptOrder)return;
+  var text=buildShareText(curReceiptOrder);
+  var title='ໃບຮັບເງິນ #'+curReceiptOrder.id;
+  if(navigator.share){
+    navigator.share({title:title,text:text}).catch(function(){});
+  }else{
+    window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+  }
+}
+
 function showR(id){
   var a=loadO(),o=null;
   for(var i=0;i<a.length;i++){if(a[i].id===id){o=a[i];break;}}
   if(!o)return;
+  curReceiptOrder=o;
   var tot=o.totalTHB||o.total||0;
   var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
   var cd=o.createdAt?o.createdAt.split('T')[0]:tday();
