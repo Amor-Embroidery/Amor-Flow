@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AMOR Embroidery</title>
+<title>ຮ້ານອະມໍປັກຊື່</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
-body{font-family:'Plus Jakarta Sans','Noto Sans Lao',sans-serif;display:flex;flex-direction:column;background:#fff;color:#003049;}
+body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;flex-direction:column;background:#fff;color:#003049;}
 :root{
   --navy:#003049;--blue:#0077b6;--red:#C0392B;--green:#1E8449;--amber:#D4860A;
   --bg:#fff;--white:#fff;--muted:#888;--border:#dde3ea;--card:#f7f9fc;
@@ -1349,7 +1349,7 @@ function goPage(pg){
   var ct=document.getElementById('content');if(ct)ct.scrollTop=0;
 
   var titles={pos:'AMOR ✶',order:'ຟອມຄໍາສັ່ງ',queue:'ຄິວ',dashboard:'Dashboard'};
-  var subs={pos:'ເລືອກການປັກ',order:'ຂໍ້ມູນລູກຄ້າ',queue:'Queue Management',dashboard:'ສະຫລຸບ'};
+  var subs={pos:'ຮ້ານອະມໍປັກຊື່',order:'ຂໍ້ມູນລູກຄ້າ',queue:'Queue Management',dashboard:'ສະຫລຸບ'};
   var tt=document.getElementById('tb-title');if(tt)tt.textContent=titles[pg]||'AMOR';
   var ts=document.getElementById('tb-sub');if(ts)ts.textContent=subs[pg]||'';
   var tb=document.getElementById('tb-back');if(tb)tb.style.display=pg==='order'?'inline-block':'none';
@@ -2034,7 +2034,7 @@ function showR(id){
 
   var html='<div class="receipt">'+
     '<div class="r-head">'+
-      '<div><div class="r-head-name">AMOR Embroidery</div><div class="r-head-sub">ໃບຮັບເງິນ · Receipt</div></div>'+
+      '<div><div class="r-head-name">ຮ້ານອະມໍປັກຊື່</div><div class="r-head-sub">ໃບຮັບເງິນ · Receipt</div></div>'+
       '<div class="r-head-id">#'+o.id+(o.isRush?' ⚡':'')+'</div>'+
     '</div>'+
     '<div>'+
@@ -2059,7 +2059,7 @@ function showR(id){
         '<span>'+baht(tot)+'<br><small style="font-weight:400;color:var(--muted);font-size:.8em">'+lak(toLak(tot))+'</small></span>'+
       '</div>'+payRow+
     '</div>'+
-    '<div class="r-foot"><div class="r-thank">ຂອບໃຈ · ขอบคุณ · Thank you 🙏</div><div class="r-tag">AMOR Embroidery</div></div>'+
+    '<div class="r-foot"><div class="r-thank">ຂອບໃຈ · ขอบคุณ · Thank you 🙏</div><div class="r-tag">ຮ້ານອະມໍປັກຊື່</div></div>'+
     '</div></div>';
 
   var pz=document.getElementById('pzone');if(pz)pz.innerHTML=html;
