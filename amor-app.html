@@ -1369,7 +1369,7 @@ function goPage(pg){
   var tn=document.getElementById('tb-new');if(tn)tn.style.display=pg==='queue'?'inline-block':'none';
   prevPage=curPage;curPage=pg;
   if(pg==='queue')renderQ();
-  if(pg==='dashboard'){buildMonthBtns();renderD();}
+  if(pg==='dashboard'){voidOpen=false;buildMonthBtns();renderD();}
 
   // When navigating TO order form, rebuild items from current cart
   if(pg==='order'){
