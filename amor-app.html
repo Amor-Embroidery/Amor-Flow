@@ -238,6 +238,19 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
   border-radius:10px;margin:10px 0 6px;font-size:.75rem;font-weight:700;
   color:var(--navy);cursor:pointer;user-select:none;}
 .arch-arrow{font-size:.65rem;color:var(--muted);}
+/* archive mini-filter */
+.arch-mini-filt{display:flex;gap:5px;margin:6px 0 8px;}
+.amf-btn{flex:1;padding:5px 2px;border-radius:7px;border:1.5px solid var(--border);background:#fff;
+  font-family:inherit;font-size:.62rem;font-weight:600;cursor:pointer;color:var(--navy);}
+.amf-btn.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+/* void section */
+.void-hd{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px;background:#fafafa;border:1.5px solid #e0e0e0;
+  border-radius:10px;margin:10px 0 6px;font-size:.75rem;font-weight:700;
+  color:#999;cursor:pointer;user-select:none;}
+/* active section label */
+.act-hd{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--blue);margin:6px 0;display:block;}
 .db-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
 .st-n{display:block;font-size:1.15rem;font-weight:700;color:var(--navy);}
 .st-l{display:block;font-size:.54rem;color:var(--muted);margin-top:2px;line-height:1.3;}
@@ -1819,14 +1832,15 @@ function closeQM(){var m=document.getElementById('q-modal');if(m)m.classList.rem
 // ─────────────────────────────────────────────────
 // DASHBOARD
 // ─────────────────────────────────────────────────
-function filtO(a){
+function filtO(a,filt){
+  var f=filt!==undefined?filt:dbFilt;
   var t=tday(),now=new Date(),dow=now.getDay();
   var mon=new Date(now);mon.setDate(now.getDate()-(dow===0?6:dow-1));
   var ws=mon.toISOString().split('T')[0],mo=now.toISOString().substring(0,7);
-  if(dbFilt==='today') return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(t);});
-  if(dbFilt==='week')  return a.filter(function(o){var d=(o.createdAt||'').substring(0,10);return d>=ws;});
-  if(dbFilt==='month') return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(mo);});
-  if(/^\d{4}-\d{2}$/.test(dbFilt)) return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(dbFilt);});
+  if(f==='today') return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(t);});
+  if(f==='week')  return a.filter(function(o){var d=(o.createdAt||'').substring(0,10);return d>=ws;});
+  if(f==='month') return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(mo);});
+  if(/^\d{4}-\d{2}$/.test(f)) return a.filter(function(o){var d=o.createdAt||o.queueDate||o.deliveryDate||'';return d.startsWith(f);});
   return a; // 'all'
 }
 function setFilt(f,btn){
@@ -1858,7 +1872,7 @@ function buildMonthBtns(){
   if(!isMo){var s=el.querySelector('select');if(s)s.value='';}
 }
 
-var archiveOpen=false;
+var archiveOpen=false, archFilt='all', voidOpen=false;
 function toggleArch(){
   archiveOpen=!archiveOpen;
   var al=document.getElementById('arch-list');
@@ -1866,29 +1880,43 @@ function toggleArch(){
   if(al)al.style.display=archiveOpen?'block':'none';
   if(ar)ar.textContent=archiveOpen?'▲':'▼';
 }
+function setArchFilt(f){
+  archFilt=f;
+  renderD();
+}
+function toggleVoid(){
+  voidOpen=!voidOpen;
+  var vl=document.getElementById('void-list');
+  var va=document.getElementById('void-arrow');
+  if(vl)vl.style.display=voidOpen?'block':'none';
+  if(va)va.textContent=voidOpen?'▲':'▼';
+}
 
 function renderD(){
   buildMonthBtns();
-  var all=loadO(),ord=filtO(all);
-  var sorted=ord.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  var all=loadO();
+
+  // ── STATS: apply top period filter (dbFilt), exclude voided ──
+  var filtered=filtO(all);
   var totalPcs=0,dn=0,totalCol=0,totalOut=0;
-  for(var i=0;i<ord.length;i++){
-    if(ord[i].status==='voided')continue;
-    var o=ord[i];
+  for(var i=0;i<filtered.length;i++){
+    if(filtered[i].status==='voided')continue;
+    var o=filtered[i];
     var embPcs=(o.items||[]).reduce(function(s,it){return s+(it.quantity||0);},0);
     var prodPcs=(o.products||[]).reduce(function(s,p){return s+(p.qty||0);},0);
     var epPcs=(o.extraProducts||[]).filter(function(e){return e.name;}).length;
     var exPcs=(o.extras||[]).filter(function(e){return e.name;}).length;
     totalPcs+=embPcs+prodPcs+epPcs+exPcs;
     if(o.status==='done')dn++;
-    var tot=ord[i].totalTHB||ord[i].total||0;
-    var ps=ord[i].payStatus||(ord[i].fullyPaid?'paid':'unpaid');
+    var tot=filtered[i].totalTHB||filtered[i].total||0;
+    var ps=filtered[i].payStatus||(filtered[i].fullyPaid?'paid':'unpaid');
     if(ps==='paid'){totalCol+=tot;}
-    else if(ps==='partial'){totalCol+=(ord[i].partialAmountTHB||0);totalOut+=tot-(ord[i].partialAmountTHB||0);}
+    else if(ps==='partial'){totalCol+=(filtered[i].partialAmountTHB||0);totalOut+=tot-(filtered[i].partialAmountTHB||0);}
     else{totalOut+=tot;}
   }
-  var nonVoided=ord.filter(function(o){return o.status!=='voided';}).length;
+  var nonVoided=filtered.filter(function(o){return o.status!=='voided';}).length;
   var undone=nonVoided-dn;
+
   var ds=document.getElementById('db-stats');
   if(ds)ds.innerHTML=
     '<div class="st-card"><span class="st-n">'+nonVoided+'</span><span class="st-l">Order In</span></div>'+
@@ -1901,15 +1929,14 @@ function renderD(){
     '<div class="pay-half"><span class="ph-lbl">ຄ້າງຮັບ</span><span class="ph-val ph-out">'+baht(totalOut)+'</span><span class="ph-sub">'+lak(toLak(totalOut))+'</span></div>'+
     '</div>';
 
-  var voidedCount=sorted.filter(function(o){return o.status==='voided';}).length;
   var lm={today:'ວັນນີ້',week:'ອາທິດ',month:'ເດືອນນີ້',all:'ທັງໝົດ'};
   var periodLabel=/^\d{4}-\d{2}$/.test(dbFilt)
     ?(function(){var d=new Date(dbFilt+'-01');return d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});}())
     :(lm[dbFilt]||'');
   var dl=document.getElementById('db-lbl');
-  if(dl)dl.textContent=periodLabel+' ('+nonVoided+(voidedCount?' +'+voidedCount+' void':'')+')';
+  if(dl)dl.textContent=periodLabel+(periodLabel?' · ':'')+nonVoided+' ຄໍາສັ່ງ';
+
   var lst=document.getElementById('db-list');if(!lst)return;
-  if(!sorted.length){lst.innerHTML=strip+'<div class="empty"><div class="ei">📋</div><div style="font-size:.85rem">ຍັງບໍ່ມີ</div></div>';return;}
 
   var sc={new:'p-new','in-progress':'p-prog',done:'p-done',voided:'p-void'};
   var sx={new:'ໃໝ່','in-progress':'ດໍາເນີນ',done:'ສໍາເລັດ',voided:'ຍົກເລີກ'};
@@ -1935,7 +1962,6 @@ function renderD(){
       payBadge='<span class="pill-pay pp-none">ຍັງບໍ່ໄດ້ຮັບ</span>';
       payActs='<button class="pbtn pbtn-full" onclick="event.stopPropagation();setPay(\''+o.id+'\',\'paid\',0)">✓ ຮັບຄົບ</button>';
     }
-    // Only show days-left badge for active (non-done, non-voided) orders
     var dlBadge=(!isDone&&!isVoided)?daysLeftBadge(o.pickupDate||o.deliveryDate):'';
     var itemLine=o.items&&o.items.length?o.items.map(function(it){return it.designType+' '+it.sizeCm+'cm';}).join(', '):(o.serviceName||'');
     return'<div class="ord-row'+(isVoided?' voided':'')+'" onclick="openQM(\''+o.id+'\')">'+
@@ -1960,26 +1986,52 @@ function renderD(){
     '</div>';
   }
 
-  // Split active orders (new/in-progress/voided) from archive (done)
-  var activeOrds=sorted.filter(function(o){return o.status!=='done';});
-  var archiveOrds=sorted.filter(function(o){return o.status==='done';});
+  // ── ACTIVE: all non-done, non-voided — never date-filtered, sorted by due date ──
+  var activeOrds=all.filter(function(o){return o.status!=='done'&&o.status!=='voided';})
+    .sort(function(a,b){
+      var pA=a.pickupDate||a.deliveryDate||'',pB=b.pickupDate||b.deliveryDate||'';
+      if(pA!==pB)return pA.localeCompare(pB);
+      return(a.id||'').localeCompare(b.id||'');
+    });
 
-  var activeHtml=activeOrds.length
-    ?activeOrds.map(makeRow).join('')
-    :'<div class="empty" style="padding:20px 0"><div class="ei">✓</div><div style="font-size:.82rem">ບໍ່ມີຄໍາສັ່ງຄ້າງ</div></div>';
+  var activeHtml='<span class="act-hd">ຄໍາສັ່ງທີ່ຄ້າງ</span>'+
+    (activeOrds.length
+      ?activeOrds.map(makeRow).join('')
+      :'<div class="empty" style="padding:20px 0"><div class="ei">✓</div><div style="font-size:.82rem">ບໍ່ມີຄໍາສັ່ງຄ້າງ</div></div>');
 
-  var archSec='';
-  if(archiveOrds.length){
-    archSec='<div class="arch-hd" onclick="toggleArch()">'+
-      '📦 Archive — ສຳເລັດ ('+archiveOrds.length+')'+
-      '<span class="arch-arrow" id="arch-arrow">'+(archiveOpen?'▲':'▼')+'</span>'+
+  // ── ARCHIVE: done orders with their OWN independent mini-filter (archFilt) ──
+  var doneAll=all.filter(function(o){return o.status==='done';});
+  var archOrds=filtO(doneAll,archFilt).sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  var amfl={today:'ວັນນີ້',week:'ອາທິດ',month:'ເດືອນ',all:'ທັງໝົດ'};
+  var archMini='<div class="arch-mini-filt">'+
+    ['today','week','month','all'].map(function(f){
+      return'<button class="amf-btn'+(archFilt===f?' on':'')+'" onclick="event.stopPropagation();setArchFilt(\''+f+'\')">'+amfl[f]+'</button>';
+    }).join('')+
+  '</div>';
+  var archSec='<div class="arch-hd" onclick="toggleArch()">'+
+    '📦 Archive — ສຳເລັດ ('+doneAll.length+')'+
+    '<span class="arch-arrow" id="arch-arrow">'+(archiveOpen?'▲':'▼')+'</span>'+
+  '</div>'+
+  '<div id="arch-list" style="display:'+(archiveOpen?'block':'none')+'">'+
+    archMini+
+    (archOrds.length?archOrds.map(makeRow).join(''):'<div class="empty" style="padding:16px 0"><div class="ei">📋</div><div style="font-size:.82rem">ບໍ່ມີ</div></div>')+
+  '</div>';
+
+  // ── VOID: separate collapsed audit trail, no date filter ──
+  var voidOrds=all.filter(function(o){return o.status==='voided';})
+    .sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  var voidSec='';
+  if(voidOrds.length){
+    voidSec='<div class="void-hd" onclick="toggleVoid()">'+
+      '🚫 Void ('+voidOrds.length+') — ຍົກເລີກ'+
+      '<span class="arch-arrow" id="void-arrow">'+(voidOpen?'▲':'▼')+'</span>'+
     '</div>'+
-    '<div id="arch-list" style="display:'+(archiveOpen?'block':'none')+'">'+
-      archiveOrds.map(makeRow).join('')+
+    '<div id="void-list" style="display:'+(voidOpen?'block':'none')+'">'+
+      voidOrds.map(makeRow).join('')+
     '</div>';
   }
 
-  lst.innerHTML=strip+activeHtml+archSec;
+  lst.innerHTML=strip+activeHtml+archSec+voidSec;
 }
 
 // ─────────────────────────────────────────────────
