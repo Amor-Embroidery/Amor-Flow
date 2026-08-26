@@ -2048,26 +2048,29 @@ var curReceiptOrder=null;
 
 function buildShareText(o){
   var tot=o.totalTHB||o.total||0;
-  var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
   var lines=['🧵 ຮ້ານອະມໍປັກຊື່',''];
-  lines.push('ໃບຮັບເງິນ · Receipt  #'+o.id+(o.isRush?' ⚡':''));
-  lines.push('──────────────────');
+  lines.push('ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ! ນີ້ຄືສະຫລຸບການສັ່ງປັກເຄື່ອງ 🙏');
+  lines.push('');
   lines.push('👤 '+o.clientName);
-  if(o.contactNumber)lines.push('📱 '+o.contactNumber);
-  lines.push('📅 ວັນຮັບ: '+fdateShort(o.pickupDate||o.deliveryDate));
-  lines.push('──────────────────');
+  lines.push('📋 ຄໍາສັ່ງ #'+o.id+(o.isRush?' ⚡ Rush':''));
+  lines.push('');
+  lines.push('ສິ່ງທີ່ສັ່ງ:');
   if(o.items&&o.items.length){
     o.items.forEach(function(it){
-      lines.push('• '+it.designType+' '+it.sizeCm+'cm  ×'+it.quantity+'   '+baht(it.subtotalTHB));
-      if(it.embroideryDetails)lines.push('  "'+it.embroideryDetails+'"');
-      if(it.font||it.thread)lines.push('  '+(it.font?'Font: '+it.font:'')+(it.font&&it.thread?' · ':'')+(it.thread?it.thread:''));
+      lines.push('• '+it.designType+' '+it.sizeCm+'cm × '+it.quantity);
+      var det=[];
+      if(it.embroideryDetails)det.push('ຄໍາ: "'+it.embroideryDetails+'"');
+      if(it.font)det.push('Font: '+it.font);
+      if(it.thread)det.push('ສີ: '+it.thread);
+      if(it.position)det.push(it.position);
+      if(det.length)lines.push('  '+det.join(' · '));
     });
   }else if(o.serviceName){
-    lines.push('• '+o.serviceName+'  ×'+(o.pieces||1)+'   '+baht(tot));
+    lines.push('• '+o.serviceName+' × '+(o.pieces||1));
   }
   if(o.products&&o.products.length){
     o.products.forEach(function(p){
-      lines.push('🛍 '+p.name+'  ×'+p.qty+'   '+lak(p.subtotalLAK));
+      lines.push('🛍 '+p.name+' × '+p.qty);
       if(p.units&&p.units.length){
         p.units.forEach(function(u,i){
           if(u.word)lines.push('  '+(p.qty>1?'ອັນ'+(i+1)+': ':'')+u.word+(u.font?' · '+u.font:'')+(u.thread?' · '+u.thread:''));
@@ -2076,20 +2079,18 @@ function buildShareText(o){
     });
   }
   if(o.extraProducts&&o.extraProducts.length){
-    o.extraProducts.forEach(function(e){if(e.name)lines.push('🛍 '+e.name+'   '+lak(e.priceLAK||0));});
+    o.extraProducts.forEach(function(e){if(e.name)lines.push('🛍 '+e.name);});
   }
   if(o.extras&&o.extras.length){
-    o.extras.forEach(function(e){if(e.name)lines.push('➕ '+e.name+'   '+baht(e.price));});
+    o.extras.forEach(function(e){if(e.name)lines.push('➕ '+e.name);});
   }
-  if(o.isRush)lines.push('⚡ Rush fee   '+baht(o.rushFee||300));
-  if(o.discountAmount>0)lines.push('🏷 ສ່ວນຫຼຸດ   -'+baht(o.discountAmount));
-  lines.push('──────────────────');
-  lines.push('💰 ລວມ: '+baht(tot)+'  ('+lak(toLak(tot))+')');
-  if(ps==='paid')lines.push('✅ ຊໍາລະຄົບ');
-  else if(ps==='partial'){var pa=o.partialAmountTHB||0;lines.push('⚠️ ຄ້າງ: '+baht(tot-pa));}
-  else lines.push('❌ ຍັງບໍ່ໄດ້ຮັບ');
   lines.push('');
-  lines.push('ຂອບໃຈທີ່ໃຊ້ບໍລິການ 🙏');
+  lines.push('💰 ລວມທັງໝົດ: '+baht(tot));
+  lines.push('              ('+lak(toLak(tot))+')');
+  lines.push('');
+  lines.push('📅 ຮັບສິນຄ້າໄດ້: '+fdateShort(o.pickupDate||o.deliveryDate));
+  lines.push('');
+  lines.push('ເຄື່ອງໃຊ້ເວລາໃນການຜະລິດ ຫາກແລ້ວໄວກ່ອນກຳນົດເຮົາຈະແຈ້ງ ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ 😊');
   return lines.join('\n');
 }
 
