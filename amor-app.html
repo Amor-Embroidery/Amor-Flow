@@ -251,7 +251,8 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 /* active section label */
 .act-hd{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
   color:var(--blue);margin:6px 0;display:block;}
-.db-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+.db-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+.db-stats-row2{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px;margin-bottom:10px;}
 .st-n{display:block;font-size:1.15rem;font-weight:700;color:var(--navy);}
 .st-l{display:block;font-size:.54rem;color:var(--muted);margin-top:2px;line-height:1.3;}
 .st-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:13px;text-align:center;}
@@ -609,6 +610,7 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
   </div>
   <div class="fp-months" id="fp-months"></div>
   <div class="db-stats" id="db-stats"></div>
+  <div class="db-stats-row2" id="db-stats2"></div>
   <span class="db-lbl-text" id="db-lbl">ຄໍາສັ່ງ</span>
   <div id="db-list"></div>
 </div>
@@ -1923,7 +1925,10 @@ function renderD(){
   if(ds)ds.innerHTML=
     '<div class="st-card"><span class="st-n">'+nonVoided+'</span><span class="st-l">Order In</span></div>'+
     '<div class="st-card"><span class="st-n" style="color:var(--green)">'+dn+'</span><span class="st-l">Order Made</span></div>'+
-    '<div class="st-card"><span class="st-n" style="color:var(--amber)">'+undone+'</span><span class="st-l">ຄ້າງ</span></div>'+
+    '<div class="st-card"><span class="st-n" style="color:var(--amber)">'+undone+'</span><span class="st-l">ຄ້າງ</span></div>';
+  var ds2=document.getElementById('db-stats2');
+  if(ds2)ds2.innerHTML=
+    '<div class="st-card"><span class="st-n" style="color:var(--blue)">'+totalPcs+'</span><span class="st-l">ຊິ້ນ (Pieces)</span></div>'+
     '<div class="st-card"><span class="st-n" style="font-size:.82rem">'+baht(totalCol+totalOut)+'</span><span class="st-l">ມູນຄ່າ</span></div>';
 
   var strip='<div class="pay-strip">'+
