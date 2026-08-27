@@ -1108,18 +1108,39 @@ function renderExtraProds(){
     return'<div style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">'+
       '<div class="extra-row" style="margin-bottom:6px">'+
         '<input class="extra-name" type="text" id="ep-name-'+i+'" placeholder="ຊື່ສິນຄ້າ *" value="'+e.name.replace(/"/g,'&quot;')+'" oninput="updExtraProd('+i+')">'+
-        '<div style="position:relative;width:95px;flex-shrink:0">'+
+        '<button class="extra-del" onclick="removeExtraProd('+i+')">✕</button>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">'+
+        '<div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0">'+
+          '<button type="button" style="width:32px;height:34px;border:none;background:var(--card);font-size:1rem;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit" onclick="chgEPQty('+i+',-1)">−</button>'+
+          '<span id="ep-qty-val-'+i+'" style="width:28px;text-align:center;font-size:.9rem;font-weight:700">'+(e.qty||1)+'</span>'+
+          '<button type="button" style="width:32px;height:34px;border:none;background:var(--card);font-size:1rem;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit" onclick="chgEPQty('+i+',1)">+</button>'+
+        '</div>'+
+        '<span style="font-size:.72rem;color:var(--muted)">ຊິ້ນ</span>'+
+        '<div style="position:relative;flex:1">'+
           '<span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:.75rem;color:var(--muted);pointer-events:none">₭</span>'+
           '<input class="extra-price" type="number" id="ep-price-'+i+'" placeholder="0" min="0" value="'+(e.priceLAK||'')+'" oninput="updExtraProd('+i+')" style="padding-left:20px;width:100%;box-sizing:border-box">'+
         '</div>'+
-        '<button class="extra-del" onclick="removeExtraProd('+i+')">✕</button>'+
       '</div>'+
       '<textarea id="ep-det-'+i+'" rows="2" placeholder="ລາຍລະອຽດ / Details (ຖ້າມີ)" oninput="updExtraProd('+i+')" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.82rem;resize:vertical;background:#fff;outline:none">'+esc(e.details||'')+'</textarea>'+
     '</div>';
   }).join('');
 }
-function addExtraProd(){extraProds.push({name:'',priceLAK:0,details:''});renderExtraProds();updOrderTotal();}
+function addExtraProd(){extraProds.push({name:'',priceLAK:0,details:'',qty:1});renderExtraProds();updOrderTotal();}
 function removeExtraProd(i){extraProds.splice(i,1);renderExtraProds();updOrderTotal();}
+function chgEPQty(i,d){
+  if(!extraProds[i])return;
+  extraProds[i].qty=Math.max(1,(extraProds[i].qty||1)+d);
+  var sv=document.getElementById('ep-qty-val-'+i);
+  if(sv)sv.textContent=extraProds[i].qty;
+  updOrderTotal();
+}
+function chgEmEPQty(k,d){
+  var sv=document.getElementById('em-ep-q-val-'+k);
+  if(!sv)return;
+  var cur=parseInt(sv.textContent)||1;
+  sv.textContent=Math.max(1,cur+d);
+}
 function updExtraProd(i){
   var n=document.getElementById('ep-name-'+i);
   var p=document.getElementById('ep-price-'+i);
@@ -1274,7 +1295,7 @@ function doSubmit(mode){
   var tot=Math.max(0,subtotal-discAmt);
   var totalPcs=items.reduce(function(s,it){return s+it.quantity;},0)
     +savedProds.reduce(function(s,p){return s+(p.qty||0);},0)
-    +extraProds.filter(function(e){return e.name;}).length
+    +extraProds.reduce(function(s,e){return s+(e.name?(e.qty||1):0);},0)
     +extras.filter(function(e){return e.name;}).length;
   var label=items.length?items[0].designType+' ('+items[0].sizeCm+' cm)'+(items.length>1?' +'+(items.length-1)+' ລາຍການ':''):
     savedProds.length?savedProds[0].name+(savedProds.length>1?' +'+(savedProds.length-1)+' ສິນຄ້າ':''):'ສິນຄ້າ/ບໍລິການ';
@@ -1601,9 +1622,16 @@ function openEdit(id){
   if(o.extraProducts&&o.extraProducts.length){
     epHtml='<div class="em-sec">ສິນຄ້າອື່ນໆ</div>';
     for(var k=0;k<o.extraProducts.length;k++){
-      epHtml+='<div class="em-extra-row">'+
-        '<input type="text" class="inp" id="em-ep-n-'+k+'" value="'+esc(o.extraProducts[k].name||'')+'" placeholder="ຊື່ສິນຄ້າ">'+
-        '<input type="number" class="inp" id="em-ep-l-'+k+'" value="'+(o.extraProducts[k].priceLAK||0)+'" style="width:110px;flex:none" placeholder="₭">'+
+      var epq=o.extraProducts[k].qty||1;
+      epHtml+='<div class="em-extra-row" style="flex-wrap:wrap;gap:6px">'+
+        '<input type="text" class="inp" id="em-ep-n-'+k+'" value="'+esc(o.extraProducts[k].name||'')+'" placeholder="ຊື່ສິນຄ້າ" style="flex:1;min-width:120px">'+
+        '<div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0">'+
+          '<button type="button" style="width:30px;height:34px;border:none;background:var(--card);font-size:1rem;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit" onclick="chgEmEPQty(\''+k+'\',-1)">−</button>'+
+          '<span id="em-ep-q-val-'+k+'" style="width:26px;text-align:center;font-size:.88rem;font-weight:700">'+epq+'</span>'+
+          '<button type="button" style="width:30px;height:34px;border:none;background:var(--card);font-size:1rem;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit" onclick="chgEmEPQty(\''+k+'\',1)">+</button>'+
+        '</div>'+
+        '<span style="font-size:.7rem;color:var(--muted);align-self:center">ຊິ້ນ</span>'+
+        '<input type="number" class="inp" id="em-ep-l-'+k+'" value="'+(o.extraProducts[k].priceLAK||0)+'" style="width:100px;flex:none" placeholder="₭">'+
       '</div>';
     }
   }
@@ -1682,6 +1710,8 @@ function saveEdit(){
       for(var k=0;k<o.extraProducts.length;k++){
         o.extraProducts[k].name=(document.getElementById('em-ep-n-'+k)||{value:''}).value.trim();
         o.extraProducts[k].priceLAK=parseFloat((document.getElementById('em-ep-l-'+k)||{value:0}).value)||0;
+        var epqv=document.getElementById('em-ep-q-val-'+k);
+        o.extraProducts[k].qty=epqv?parseInt(epqv.textContent)||1:o.extraProducts[k].qty||1;
       }
     }
 
@@ -1908,7 +1938,7 @@ function renderD(){
     var o=filtered[i];
     var embPcs=(o.items||[]).reduce(function(s,it){return s+(it.quantity||0);},0);
     var prodPcs=(o.products||[]).reduce(function(s,p){return s+(p.qty||0);},0);
-    var epPcs=(o.extraProducts||[]).filter(function(e){return e.name;}).length;
+    var epPcs=(o.extraProducts||[]).reduce(function(s,e){return s+(e.name?(e.qty||1):0);},0);
     var exPcs=(o.extras||[]).filter(function(e){return e.name;}).length;
     totalPcs+=embPcs+prodPcs+epPcs+exPcs;
     if(o.status==='done')dn++;
@@ -2079,7 +2109,7 @@ function buildShareText(o){
     });
   }
   if(o.extraProducts&&o.extraProducts.length){
-    o.extraProducts.forEach(function(e){if(e.name)lines.push('🛍 '+e.name);});
+    o.extraProducts.forEach(function(e){if(e.name)lines.push('🛍 '+e.name+(e.qty>1?' × '+e.qty:''));});
   }
   if(o.extras&&o.extras.length){
     o.extras.forEach(function(e){if(e.name)lines.push('➕ '+e.name);});
@@ -2173,7 +2203,7 @@ function showR(id){
         }).join(''):'');
         return'<div class="rt-row"><span>🛍 '+p.name+' ×'+p.qty+'</span><span>'+lak(p.subtotalLAK)+'</span></div>'+unitLines;
       }).join(''):'')+
-      (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return'<div class="rt-row"><span>🛍 '+e.name+'</span><span>'+lak(e.priceLAK||0)+'</span></div>';}).join(''):'')+
+      (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return'<div class="rt-row"><span>🛍 '+e.name+(e.qty>1?' ×'+e.qty:'')+'</span><span>'+lak(e.priceLAK||0)+'</span></div>';}).join(''):'')+
       (o.extras&&o.extras.length?o.extras.map(function(e){return'<div class="rt-row"><span>➕ '+e.name+'</span><span>'+baht(e.price)+'</span></div>';}).join(''):'')+
       (o.discountAmount>0?'<div class="rt-row"><span>🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':'')+'</span><span style="color:var(--green);font-weight:700">- '+baht(o.discountAmount)+'</span></div>':'')+
       '<div class="rt-row grand"><span>ລວມ</span>'+
