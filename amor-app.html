@@ -2034,15 +2034,18 @@ function openQM(id){
   var a=loadO(),o=null;
   for(var i=0;i<a.length;i++){if(a[i].id===id){o=a[i];break;}}
   if(!o)return;
+  var isHelper=curRole==='helper';
   var qt=document.getElementById('qm-title');if(qt)qt.textContent='#'+o.id+(o.isRush?' ⚡':'');
-  var tot=o.totalTHB||o.total||0;
 
-  // Build items HTML
+  // Build embroidery items HTML
   var itemsHtml='';
   if(o.items&&o.items.length>0){
     itemsHtml=o.items.map(function(it,i){
+      var hd=isHelper
+        ?(i+1)+'. '+it.designType+' · '+it.sizeCm+' cm · ×'+it.quantity+' ຊິ້ນ'
+        :(i+1)+'. '+it.designType+' · '+it.sizeCm+' cm · ×'+it.quantity+' = '+baht(it.subtotalTHB);
       return'<div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;margin:4px 0">'+
-        '<div style="font-size:.72rem;font-weight:700;margin-bottom:3px">'+(i+1)+'. '+it.designType+' · '+it.sizeCm+' cm · ×'+it.quantity+' = '+baht(it.subtotalTHB)+'</div>'+
+        '<div style="font-size:.72rem;font-weight:700;margin-bottom:3px">'+hd+'</div>'+
         (it.embroideryDetails?mr('"ລາຍລະ"','"'+it.embroideryDetails+'"'):'')+
         (it.font?mr('ຟອນ',it.font):'')+
         (it.thread?mr('ສີດ້າຍ',it.thread):'')+
@@ -2054,41 +2057,71 @@ function openQM(id){
   }
 
   var qb=document.getElementById('qm-body');
-  if(qb)qb.innerHTML=
-    mr('ລູກຄ້າ',o.clientName)+
-    mr('ເບີ',o.contactNumber||'—')+
-    mr('ເຂົ້າຄິວ',fdate(o.queueDate||o.deliveryDate))+
-    mr('ຮັບສິນຄ້າ',fdate(o.pickupDate||o.deliveryDate))+
-    mr('ເຫຼືອ',daysLeftBadge(o.pickupDate||o.deliveryDate)||'—')+
-    itemsHtml+
-    (o.isRush?mr('⚡ ຄ່າດ່ວນ',baht(o.rushFee||RUSH_FEE)):'')+
-    (o.products&&o.products.length?o.products.map(function(p){
-      var unitHtml=(p.units&&p.units.length?p.units.map(function(u,i){
-        return mr('  '+(p.qty>1?'ອັນ'+(i+1)+' ':'')+'ຄໍາ',u.word||'—')+(u.font?mr('  ຟອນ',u.font):'')+(u.thread?mr('  ດ້າຍ',u.thread):'');
-      }).join(''):'');
-      return mr('🛍 '+p.name+' ×'+p.qty,lak(p.subtotalLAK)+' ≈'+baht(p.subtotalTHB))+unitHtml;
-    }).join(''):'')+
-    (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return mr('🛍 '+e.name,lak(e.priceLAK||0)+' ≈'+baht(pToTHB(e.priceLAK||0)))+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');}).join(''):'')+
-    (o.extras&&o.extras.length?o.extras.map(function(e){return mr('➕ '+e.name,baht(e.price))+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');}).join(''):'')+
-    (o.discountAmount>0?mr('🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':''),'<span style="color:var(--green)">- '+baht(o.discountAmount)+'</span>'):'')+
-    mr('ລາຄາລວມ',baht(tot)+' · '+lak(toLak(tot)))+
-    mr('ສະກຸນ',o.payCurrency||'THB')+
-    paySection(o,id);
+  if(qb){
+    if(isHelper){
+      // ── HELPER VIEW: no prices, no payment ──
+      var totalPcs=calcOrderPieces(o);
+      qb.innerHTML=
+        mr('ລູກຄ້າ',o.clientName)+
+        mr('ເຂົ້າຄິວ',fdate(o.queueDate||o.deliveryDate))+
+        mr('ຮັບສິນຄ້າ',fdate(o.pickupDate||o.deliveryDate))+
+        mr('ເຫຼືອ',daysLeftBadge(o.pickupDate||o.deliveryDate)||'—')+
+        itemsHtml+
+        (o.products&&o.products.length?o.products.map(function(p){
+          var unitHtml=(p.units&&p.units.length?p.units.map(function(u,ui){
+            return mr('  '+(p.qty>1?'ອັນ'+(ui+1)+' ':'')+'ຄໍາ',u.word||'—')+(u.font?mr('  ຟອນ',u.font):'')+(u.thread?mr('  ດ້າຍ',u.thread):'');
+          }).join(''):'');
+          return mr('🛍 '+p.name+' ×'+p.qty+' ຊິ້ນ','')+unitHtml;
+        }).join(''):'')+
+        (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){
+          return mr('🛍 '+e.name+' ×'+(e.qty||1)+' ຊິ້ນ','')+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');
+        }).join(''):'')+
+        (o.extras&&o.extras.length?o.extras.map(function(e){
+          return mr('➕ '+e.name,'')+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');
+        }).join(''):'')+
+        mr('ລວມທັງໝົດ','<span style="font-weight:700;color:var(--navy)">'+totalPcs+' ຊິ້ນ</span>');
+    } else {
+      // ── OWNER VIEW: full details ──
+      var tot=o.totalTHB||o.total||0;
+      qb.innerHTML=
+        mr('ລູກຄ້າ',o.clientName)+
+        mr('ເບີ',o.contactNumber||'—')+
+        mr('ເຂົ້າຄິວ',fdate(o.queueDate||o.deliveryDate))+
+        mr('ຮັບສິນຄ້າ',fdate(o.pickupDate||o.deliveryDate))+
+        mr('ເຫຼືອ',daysLeftBadge(o.pickupDate||o.deliveryDate)||'—')+
+        itemsHtml+
+        (o.isRush?mr('⚡ ຄ່າດ່ວນ',baht(o.rushFee||RUSH_FEE)):'')+
+        (o.products&&o.products.length?o.products.map(function(p){
+          var unitHtml=(p.units&&p.units.length?p.units.map(function(u,ui){
+            return mr('  '+(p.qty>1?'ອັນ'+(ui+1)+' ':'')+'ຄໍາ',u.word||'—')+(u.font?mr('  ຟອນ',u.font):'')+(u.thread?mr('  ດ້າຍ',u.thread):'');
+          }).join(''):'');
+          return mr('🛍 '+p.name+' ×'+p.qty,lak(p.subtotalLAK)+' ≈'+baht(p.subtotalTHB))+unitHtml;
+        }).join(''):'')+
+        (o.extraProducts&&o.extraProducts.length?o.extraProducts.map(function(e){return mr('🛍 '+e.name,lak(e.priceLAK||0)+' ≈'+baht(pToTHB(e.priceLAK||0)))+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');}).join(''):'')+
+        (o.extras&&o.extras.length?o.extras.map(function(e){return mr('➕ '+e.name,baht(e.price))+(e.details?mr('  ລາຍລະອຽດ','<span style="color:var(--muted);font-weight:400">'+esc(e.details)+'</span>'):'');}).join(''):'')+
+        (o.discountAmount>0?mr('🏷 ສ່ວນຫຼຸດ'+(o.discountType==='pct'?' ('+o.discountValue+'%)':''),'<span style="color:var(--green)">- '+baht(o.discountAmount)+'</span>'):'')+
+        mr('ລາຄາລວມ',baht(tot)+' · '+lak(toLak(tot)))+
+        mr('ສະກຸນ',o.payCurrency||'THB')+
+        paySection(o,id);
+    }
+  }
 
   var bb=document.getElementById('qm-btns');
   if(bb){
     bb.innerHTML='';
     var mk=function(cl,tx,fn){var b=document.createElement('button');b.className='mbtn '+cl;b.textContent=tx;b.onclick=fn;bb.appendChild(b);};
     if(o.status==='voided'){
-      mk('mb-void mb-undo','↩ ຍົກເລີກ Void',function(){unvoidOrder(id);});
+      if(!isHelper)mk('mb-void mb-undo','↩ ຍົກເລີກ Void',function(){unvoidOrder(id);});
     } else {
-      if(o.status!=='in-progress') mk('mb-prog','▶ ເລີ່ມ',function(){mvS(id,'in-progress');closeQM();});
-      if(o.status!=='done')        mk('mb-done','✓ ສໍາເລັດ',function(){mvS(id,'done');closeQM();});
-      if(o.status!=='new')         mk('mb-undo','↩ ຄືນ',function(){mvS(id,'new');closeQM();});
-      mk('mb-void','⊘ Void',function(){if(confirm('Void ຄໍາສັ່ງ #'+id+'?')){voidOrder(id);}});
+      if(o.status!=='in-progress')mk('mb-prog','▶ ເລີ່ມ',function(){mvS(id,'in-progress');closeQM();});
+      if(o.status!=='done')       mk('mb-done','✓ ສໍາເລັດ',function(){mvS(id,'done');closeQM();});
+      if(o.status!=='new')        mk('mb-undo','↩ ຄືນ',function(){mvS(id,'new');closeQM();});
+      if(!isHelper)mk('mb-void','⊘ Void',function(){if(confirm('Void ຄໍາສັ່ງ #'+id+'?')){voidOrder(id);}});
     }
-    mk('mb-edit','✏ ແກ້ໄຂ',function(){closeQM();openEdit(id);});
-    mk('mb-rcpt','🧾 ໃບ',function(){closeQM();showR(id);});
+    if(!isHelper){
+      mk('mb-edit','✏ ແກ້ໄຂ',function(){closeQM();openEdit(id);});
+      mk('mb-rcpt','🧾 ໃບ',function(){closeQM();showR(id);});
+    }
   }
   var m=document.getElementById('q-modal');if(m)m.classList.add('on');
 }
