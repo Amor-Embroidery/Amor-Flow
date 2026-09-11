@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ຮ້ານອະມໍປັກຊື່</title>
+<meta name="theme-color" content="#1E4D66">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AMOR">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -363,6 +368,33 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 #cfg-status{font-size:.75rem;margin-top:6px;}
 .empty{text-align:center;padding:40px 20px;color:var(--muted);}
 .ei{font-size:2.5rem;margin-bottom:10px;}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{position:fixed;inset:0;background:#fff;z-index:999;
+  display:flex;align-items:center;justify-content:center;padding:24px;}
+#login-screen.hidden{display:none;}
+.login-card{width:100%;max-width:340px;text-align:center;}
+.login-logo{font-size:3.5rem;margin-bottom:12px;}
+.login-name{font-size:1.5rem;font-weight:700;color:var(--navy);}
+.login-sub{font-size:.85rem;color:var(--muted);margin-bottom:32px;}
+.login-field{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:14px;
+  font-family:inherit;font-size:1rem;color:var(--navy);background:#fff;
+  outline:none;margin-bottom:12px;display:block;}
+.login-field:focus{border-color:var(--navy);}
+.login-btn{width:100%;padding:15px;border-radius:16px;border:none;background:var(--navy);
+  color:#fff;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;}
+.login-btn:disabled{opacity:.5;cursor:default;}
+.login-err{font-size:.82rem;color:var(--red);min-height:22px;margin-top:8px;}
+.login-setup-link{font-size:.72rem;color:var(--muted);margin-top:20px;cursor:pointer;
+  background:none;border:none;font-family:inherit;text-decoration:underline;}
+/* topbar user + logout */
+.tb-user{font-size:.62rem;color:rgba(255,255,255,.6);max-width:90px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tb-logout{background:none;border:none;color:rgba(255,255,255,.6);
+  font-size:1rem;cursor:pointer;padding:4px 6px;display:none;line-height:1;}
+/* helper piece bar */
+#helper-piece-bar{display:none;padding:10px 16px;background:var(--navy);color:#fff;
+  font-size:.85rem;font-weight:600;text-align:center;letter-spacing:.3px;}
 .p-void{background:#f0f0f0;color:#999;}
 .disc-section{margin:0 16px 12px;padding:12px 14px;background:var(--white);
   border:1.5px solid var(--border);border-radius:14px;}
@@ -410,6 +442,20 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 <body>
 
 <!-- TOPBAR -->
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🧵</div>
+    <div class="login-name">ຮ້ານອະມໍປັກຊື່</div>
+    <div class="login-sub">AMOR Embroidery</div>
+    <input id="l-email" class="login-field" type="email" placeholder="Email" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    <input id="l-pass" class="login-field" type="password" placeholder="ລະຫັດຜ່ານ" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" id="l-btn" onclick="doLogin()">ເຂົ້າລະບົບ</button>
+    <div class="login-err" id="l-err"></div>
+    <button class="login-setup-link" onclick="openCfgFromLogin()">⚙ ຕັ້ງຄ່າ Firebase</button>
+  </div>
+</div>
+
 <div class="topbar">
   <button class="tb-back" id="tb-back" onclick="goBack()">‹</button>
   <div class="tb-info">
@@ -418,7 +464,9 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
   </div>
   <button class="tb-new" id="tb-new" style="display:none" onclick="goPage('pos')">+ ໃໝ່</button>
   <span class="conn-dot" id="conn-dot"></span>
-  <button class="tb-cfg" onclick="openCfg()">⚙</button>
+  <span class="tb-user" id="tb-user"></span>
+  <button class="tb-logout" id="tb-logout" onclick="doLogout()" title="ອອກຈາກລະບົບ">⏏</button>
+  <button class="tb-cfg" id="tb-cfg" onclick="openCfg()">⚙</button>
 </div>
 
 <div id="content">
@@ -592,6 +640,7 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 
 <!-- ══ QUEUE PAGE ══ -->
 <div class="page" id="page-queue">
+  <div id="helper-piece-bar"></div>
   <div style="padding:8px 14px 2px;display:flex;align-items:center;justify-content:space-between;">
     <span style="font-size:.72rem;color:var(--muted)" id="q-today-lbl"></span>
     <button class="wn-btn" onclick="renderQ()" style="font-size:.65rem;padding:3px 9px">↻ ໂຫຼດໃໝ່</button>
@@ -693,12 +742,20 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
         <button class="cfg-btn cfg-save" onclick="saveFirebaseCfg()">✓ ບັນທຶກ</button>
         <button class="cfg-btn cfg-disc" onclick="disconnectFirebase()">✗ ຕັດ</button>
       </div>
+      <div id="role-mgmt-section" style="display:none;margin-top:16px;border-top:1.5px solid var(--border);padding-top:14px;">
+        <div style="font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">ຈັດການ Helper</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">Helper Email (ໜຶ່ງ email ຕໍ່ແຖວ):</div>
+        <textarea id="helper-emails-input" style="width:100%;height:90px;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:.85rem;padding:10px;resize:none;outline:none;margin-bottom:8px" placeholder="helper@email.com"></textarea>
+        <button class="cfg-btn cfg-save" style="width:100%" onclick="saveHelperEmails()">✓ ບັນທຶກ Helper</button>
+        <div id="role-status" style="font-size:.72rem;margin-top:6px;"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
 'use strict';
 var KEY='amor_orders_v2', FCKEY='amor_fb_cfg';
@@ -734,6 +791,7 @@ var discountType='thb', discountValue=0;
 var extras=[];
 var curPage='pos', prevPage='pos', wkOff=0, dbFilt='all';
 var ordersCache=[], _fdb=null, _unsub=null;
+var curUser=null, curRole=null, _fauth=null;
 var _previewQueueDate=''; // calculated queue date shown in form
 
 // ─────────────────────────────────────────────────
@@ -755,17 +813,160 @@ function initFirebase(cfg){
     if(firebase.apps.length)firebase.apps[0].delete();
     var app=firebase.initializeApp(cfg);
     _fdb=firebase.firestore(app);
+    _fauth=firebase.auth(app);
     if(_unsub)_unsub();
     _unsub=_fdb.collection('orders').onSnapshot(function(snap){
       ordersCache=[];
       snap.forEach(function(d){ordersCache.push(d.data());});
       ordersCache.sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
       localStorage.setItem(KEY,JSON.stringify(ordersCache));
-      if(curPage==='queue')renderQ();
-      if(curPage==='dashboard')renderD();
+      if(curUser&&curPage==='queue')renderQ();
+      if(curUser&&curPage==='dashboard')renderD();
+    });
+    _fauth.onAuthStateChanged(function(user){
+      if(user){curUser=user;loadRoleAndShow(user);}
+      else{curUser=null;curRole=null;showLoginScreen();}
     });
     setConnDot(true);return true;
   }catch(e){console.error(e);setConnDot(false);return false;}
+}
+
+// ─────────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────────
+function showLoginScreen(){
+  var ls=document.getElementById('login-screen');
+  if(ls)ls.classList.remove('hidden');
+  var lu=document.getElementById('tb-logout');if(lu)lu.style.display='none';
+  var tu=document.getElementById('tb-user');if(tu)tu.textContent='';
+}
+function hideLoginScreen(){
+  var ls=document.getElementById('login-screen');
+  if(ls)ls.classList.add('hidden');
+}
+function loadRoleAndShow(user){
+  if(!_fdb){curRole='owner';hideLoginScreen();applyRoleGating();goPage('pos');return;}
+  _fdb.collection('amor_config').doc('roles').get().then(function(doc){
+    var data=doc.exists?doc.data():{};
+    var helpers=(data.helperEmails||[]).map(function(e){return e.trim().toLowerCase();});
+    curRole=helpers.indexOf((user.email||'').toLowerCase())>=0?'helper':'owner';
+    hideLoginScreen();
+    applyRoleGating();
+    goPage(curRole==='helper'?'queue':'pos');
+    if(curRole==='helper')loadHelperPieceStats();
+  }).catch(function(){
+    curRole='owner';hideLoginScreen();applyRoleGating();goPage('pos');
+  });
+}
+function applyRoleGating(){
+  var isHelper=curRole==='helper';
+  ['pos','order','dashboard'].forEach(function(p){
+    var el=document.getElementById('bn-'+p);
+    if(el)el.style.display=isHelper?'none':'flex';
+  });
+  var cfgBtn=document.getElementById('tb-cfg');
+  if(cfgBtn)cfgBtn.style.display=isHelper?'none':'inline-block';
+  var tnBtn=document.getElementById('tb-new');
+  if(tnBtn)tnBtn.style.display=isHelper?'none':'none'; // hidden until queue page anyway
+  var lu=document.getElementById('tb-logout');if(lu)lu.style.display='inline-block';
+  var tu=document.getElementById('tb-user');
+  if(tu&&curUser)tu.textContent=(curUser.email||'').split('@')[0];
+  if(!isHelper){
+    // Show role mgmt section in cfg modal for owners
+    var rms=document.getElementById('role-mgmt-section');if(rms)rms.style.display='block';
+    loadHelperEmailsInCfg();
+  }
+}
+function doLogin(){
+  var email=(document.getElementById('l-email')||{value:''}).value.trim();
+  var pass=(document.getElementById('l-pass')||{value:''}).value;
+  var errEl=document.getElementById('l-err');
+  var btn=document.getElementById('l-btn');
+  if(!email||!pass){if(errEl)errEl.textContent='ກະລຸນາໃສ່ email ແລະ ລະຫັດຜ່ານ';return;}
+  if(!_fauth){if(errEl)errEl.textContent='Firebase ຍັງບໍ່ໄດ້ຕັ້ງຄ່າ — ກົດ "ຕັ້ງຄ່າ Firebase" ດ້ານລຸ່ມ';return;}
+  if(btn){btn.disabled=true;btn.textContent='ກໍາລັງເຂົ້າ...';}
+  if(errEl)errEl.textContent='';
+  _fauth.signInWithEmailAndPassword(email,pass).catch(function(){
+    if(btn){btn.disabled=false;btn.textContent='ເຂົ້າລະບົບ';}
+    if(errEl)errEl.textContent='ອີເມວ ຫຼື ລະຫັດຜ່ານຜິດ';
+  });
+}
+function doLogout(){
+  if(_fauth)_fauth.signOut();
+}
+function openCfgFromLogin(){
+  // Allow Firebase config setup from login screen (before auth)
+  var m=document.getElementById('cfg-modal');if(m)m.classList.add('on');
+  var tj=document.getElementById('cfg-json');if(tj)tj.value=localStorage.getItem(FCKEY)||'';
+}
+
+// ─────────────────────────────────────────────────
+// HELPER PIECE LOGGING
+// ─────────────────────────────────────────────────
+function calcOrderPieces(o){
+  var e=(o.items||[]).reduce(function(s,it){return s+(it.quantity||0);},0);
+  var p=(o.products||[]).reduce(function(s,pr){return s+(pr.qty||0);},0);
+  var ep=(o.extraProducts||[]).reduce(function(s,x){return s+(x.name?(x.qty||1):0);},0);
+  var ex=(o.extras||[]).filter(function(x){return x.name;}).length;
+  return e+p+ep+ex;
+}
+function getMondayStr(d){
+  var dd=new Date(d);var dow=dd.getDay();
+  dd.setDate(dd.getDate()-(dow===0?6:dow-1));
+  return dd.toISOString().split('T')[0];
+}
+function logHelperPieces(order){
+  if(!_fdb||!curUser||curRole!=='helper')return;
+  var pcs=calcOrderPieces(order);
+  if(!pcs)return;
+  _fdb.collection('amor_pieceLogs').add({
+    orderId:order.id,
+    clientName:order.clientName||'',
+    helperEmail:curUser.email,
+    helperName:(curUser.email||'').split('@')[0],
+    pieces:pcs,
+    timestamp:new Date().toISOString(),
+    weekOf:getMondayStr(new Date())
+  });
+}
+function loadHelperPieceStats(){
+  var bar=document.getElementById('helper-piece-bar');
+  if(!bar||!_fdb||!curUser)return;
+  var weekOf=getMondayStr(new Date());
+  _fdb.collection('amor_pieceLogs')
+    .where('helperEmail','==',curUser.email)
+    .where('weekOf','==',weekOf)
+    .get().then(function(snap){
+      var total=0;
+      snap.forEach(function(d){total+=(d.data().pieces||0);});
+      bar.style.display='block';
+      bar.textContent='🧵 ອາທິດນີ້ທ່ານທໍາໄດ້: '+total+' ຊິ້ນ';
+    }).catch(function(){bar.style.display='none';});
+}
+
+// ─────────────────────────────────────────────────
+// ROLE MANAGEMENT (owner only — in cfg modal)
+// ─────────────────────────────────────────────────
+function loadHelperEmailsInCfg(){
+  if(!_fdb)return;
+  _fdb.collection('amor_config').doc('roles').get().then(function(doc){
+    var data=doc.exists?doc.data():{};
+    var inp=document.getElementById('helper-emails-input');
+    if(inp)inp.value=(data.helperEmails||[]).join('\n');
+  }).catch(function(){});
+}
+function saveHelperEmails(){
+  var inp=document.getElementById('helper-emails-input');
+  var rs=document.getElementById('role-status');
+  if(!_fdb){if(rs)rs.textContent='Firebase ຍັງບໍ່ໄດ້ຕັ້ງຄ່າ';return;}
+  var raw=(inp?inp.value:'').trim();
+  var emails=raw?raw.split('\n').map(function(e){return e.trim().toLowerCase();}).filter(Boolean):[];
+  _fdb.collection('amor_config').doc('roles').set({helperEmails:emails},{merge:true}).then(function(){
+    if(rs){rs.textContent='✓ ບັນທຶກສໍາເລັດ';rs.style.color='var(--green)';}
+    setTimeout(function(){if(rs)rs.textContent='';},2000);
+  }).catch(function(e){
+    if(rs){rs.textContent='✗ ຜິດພາດ: '+e.message;rs.style.color='var(--red)';}
+  });
 }
 function setConnDot(ok){var d=document.getElementById('conn-dot');if(d)d.className='conn-dot'+(ok?' ok':'');}
 function saveFirebaseCfg(){
@@ -795,18 +996,24 @@ function openCfg(){
 function closeCfg(){var m=document.getElementById('cfg-modal');if(m)m.classList.remove('on');}
 (function(){
   var s=localStorage.getItem(FCKEY);
-  if(!s)return;
+  if(!s){
+    // No Firebase config yet — login screen stays visible, user can tap "ຕັ້ງຄ່າ Firebase"
+    return;
+  }
   function tryConnect(){
     try{var cfg=JSON.parse(s);return initFirebase(cfg);}catch(e){return false;}
   }
-  // First attempt after app renders
   setTimeout(function(){
-    if(!tryConnect()){
-      // Retry after 3 more seconds if first attempt failed (slow network)
-      setTimeout(tryConnect,3000);
-    }
-  },1000);
+    if(!tryConnect()){setTimeout(tryConnect,3000);}
+  },800);
 })();
+
+// Register service worker for PWA offline support
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
 
 // Init product cards on load
 setTimeout(function(){renderProductCards();},50);
@@ -1393,7 +1600,7 @@ function goPage(pg){
   var tb=document.getElementById('tb-back');if(tb)tb.style.display=pg==='order'?'inline-block':'none';
   var tn=document.getElementById('tb-new');if(tn)tn.style.display=pg==='queue'?'inline-block':'none';
   prevPage=curPage;curPage=pg;
-  if(pg==='queue')renderQ();
+  if(pg==='queue'){renderQ();if(curRole==='helper')loadHelperPieceStats();}
   if(pg==='dashboard'){voidOpen=false;buildMonthBtns();renderD();}
 
   // When navigating TO order form, rebuild items from current cart
@@ -1524,8 +1731,11 @@ function qCard(o,i,sec){
 }
 
 function mvS(id,st){
-  var a=loadO();for(var i=0;i<a.length;i++){if(a[i].id===id){a[i].status=st;break;}}
+  var a=loadO();var ord=null;
+  for(var i=0;i<a.length;i++){if(a[i].id===id){a[i].status=st;ord=a[i];break;}}
+  if(st==='done'&&curRole==='helper'&&ord)logHelperPieces(ord);
   saveO(a);renderQ();
+  if(st==='done'&&curRole==='helper')setTimeout(loadHelperPieceStats,1500);
 }
 function voidOrder(id){
   var a=loadO();for(var i=0;i<a.length;i++){if(a[i].id===id){a[i].status='voided';break;}}
