@@ -393,8 +393,23 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 .tb-logout{background:none;border:none;color:rgba(255,255,255,.6);
   font-size:1rem;cursor:pointer;padding:4px 6px;display:none;line-height:1;}
 /* helper piece bar */
-#helper-piece-bar{display:none;padding:10px 16px;background:var(--navy);color:#fff;
-  font-size:.85rem;font-weight:600;text-align:center;letter-spacing:.3px;}
+#helper-piece-bar{display:none;background:var(--navy);color:#fff;flex-shrink:0;}
+.hpb-stats{display:flex;align-items:center;padding:12px 16px;gap:8px;}
+.hpb-stat{flex:1;text-align:center;}
+.hpb-stat-n{display:block;font-size:1.25rem;font-weight:700;}
+.hpb-stat-l{display:block;font-size:.65rem;opacity:.72;margin-top:2px;}
+.hpb-hist-btn{background:rgba(255,255,255,.15);border:none;color:#fff;
+  border-radius:10px;padding:8px 12px;font-family:inherit;font-size:.75rem;
+  font-weight:600;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+/* helper history panel */
+#helper-hist-panel{display:none;background:var(--white);border-bottom:1.5px solid var(--border);}
+.hist-hd{padding:10px 16px 4px;font-size:.62rem;font-weight:700;color:var(--blue);
+  text-transform:uppercase;letter-spacing:1px;}
+.hist-item{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 16px;border-top:1px solid var(--border);}
+.hist-client{font-size:.88rem;font-weight:600;color:var(--navy);}
+.hist-date{font-size:.68rem;color:var(--muted);margin-top:1px;}
+.hist-pcs{font-size:.95rem;font-weight:700;color:var(--blue);flex-shrink:0;}
 .p-void{background:#f0f0f0;color:#999;}
 .disc-section{margin:0 16px 12px;padding:12px 14px;background:var(--white);
   border:1.5px solid var(--border);border-radius:14px;}
@@ -640,7 +655,20 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 
 <!-- ══ QUEUE PAGE ══ -->
 <div class="page" id="page-queue">
-  <div id="helper-piece-bar"></div>
+  <div id="helper-piece-bar">
+    <div class="hpb-stats">
+      <div class="hpb-stat">
+        <span class="hpb-stat-n" id="hpb-week">—</span>
+        <span class="hpb-stat-l">🧵 ອາທິດນີ້</span>
+      </div>
+      <div class="hpb-stat">
+        <span class="hpb-stat-n" id="hpb-month">—</span>
+        <span class="hpb-stat-l">📅 ເດືອນນີ້</span>
+      </div>
+      <button class="hpb-hist-btn" onclick="toggleHelperHist()">ປະຫວັດ ▾</button>
+    </div>
+  </div>
+  <div id="helper-hist-panel"></div>
   <div style="padding:8px 14px 2px;display:flex;align-items:center;justify-content:space-between;">
     <span style="font-size:.72rem;color:var(--muted)" id="q-today-lbl"></span>
     <button class="wn-btn" onclick="renderQ()" style="font-size:.65rem;padding:3px 9px">↻ ໂຫຼດໃໝ່</button>
@@ -929,19 +957,62 @@ function logHelperPieces(order){
     weekOf:getMondayStr(new Date())
   });
 }
+var _helperHistOpen=false,_helperHistItems=[];
 function loadHelperPieceStats(){
   var bar=document.getElementById('helper-piece-bar');
   if(!bar||!_fdb||!curUser)return;
   var weekOf=getMondayStr(new Date());
+  var monthOf=new Date().toISOString().substring(0,7);
   _fdb.collection('amor_pieceLogs')
     .where('helperEmail','==',curUser.email)
-    .where('weekOf','==',weekOf)
     .get().then(function(snap){
-      var total=0;
-      snap.forEach(function(d){total+=(d.data().pieces||0);});
+      var weekTotal=0,monthTotal=0,items=[];
+      snap.forEach(function(d){
+        var data=d.data();
+        var pcs=data.pieces||0;
+        if(data.weekOf===weekOf)weekTotal+=pcs;
+        if((data.timestamp||'').startsWith(monthOf))monthTotal+=pcs;
+        items.push(data);
+      });
+      // Sort newest first
+      items.sort(function(a,b){return(b.timestamp||'').localeCompare(a.timestamp||'');});
+      _helperHistItems=items;
       bar.style.display='block';
-      bar.textContent='🧵 ອາທິດນີ້ທ່ານທໍາໄດ້: '+total+' ຊິ້ນ';
+      var wk=document.getElementById('hpb-week');
+      var mo=document.getElementById('hpb-month');
+      if(wk)wk.textContent=weekTotal+' ຊິ້ນ';
+      if(mo)mo.textContent=monthTotal+' ຊິ້ນ';
+      if(_helperHistOpen)renderHelperHist();
     }).catch(function(){bar.style.display='none';});
+}
+function toggleHelperHist(){
+  _helperHistOpen=!_helperHistOpen;
+  var btn=document.querySelector('.hpb-hist-btn');
+  if(btn)btn.textContent=_helperHistOpen?'ປະຫວັດ ▴':'ປະຫວັດ ▾';
+  if(_helperHistOpen)renderHelperHist();
+  else{var p=document.getElementById('helper-hist-panel');if(p)p.style.display='none';}
+}
+function renderHelperHist(){
+  var panel=document.getElementById('helper-hist-panel');
+  if(!panel)return;
+  if(!_helperHistItems.length){
+    panel.style.display='block';
+    panel.innerHTML='<div style="padding:16px;text-align:center;font-size:.82rem;color:var(--muted)">ຍັງບໍ່ມີປະຫວັດ</div>';
+    return;
+  }
+  var html='<div class="hist-hd">ປະຫວັດການສໍາເລັດ</div>';
+  _helperHistItems.forEach(function(d){
+    var date=(d.timestamp||'').substring(0,10);
+    html+='<div class="hist-item">'+
+      '<div>'+
+        '<div class="hist-client">'+(d.clientName||'ລູກຄ້າ')+'</div>'+
+        '<div class="hist-date">'+date+'</div>'+
+      '</div>'+
+      '<div class="hist-pcs">'+(d.pieces||0)+' ຊິ້ນ</div>'+
+    '</div>';
+  });
+  panel.innerHTML=html;
+  panel.style.display='block';
 }
 
 // ─────────────────────────────────────────────────
