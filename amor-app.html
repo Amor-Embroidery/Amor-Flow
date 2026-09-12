@@ -787,6 +787,8 @@ body{font-family:'Noto Sans Lao','Plus Jakarta Sans',sans-serif;display:flex;fle
 <script>
 'use strict';
 var KEY='amor_orders_v2', FCKEY='amor_fb_cfg';
+// Hardcoded Firebase config — no manual setup needed on any device
+var HARDCODED_FB_CFG={"apiKey":"AIzaSyBSsDE-8bNgfc1A-DSoX7Bbq6pHM9lo5hE","authDomain":"amor-pos.firebaseapp.com","projectId":"amor-pos","storageBucket":"amor-pos.firebasestorage.app","messagingSenderId":"147647314891","appId":"1:147647314891:web:ad9092aaaca5d6fd2c144e","measurementId":"G-H02CGRYQ1W"};
 var DAYS=['ອາ','ຈ','ອ','ພ','ພຫ','ສ','ເສ'];
 var LAK_RATE=690;   // 1 THB = 690 LAK
 var RUSH_FEE=300;   // THB
@@ -1076,15 +1078,13 @@ function openCfg(){
 }
 function closeCfg(){var m=document.getElementById('cfg-modal');if(m)m.classList.remove('on');}
 (function(){
+  // Use saved config if present, otherwise fall back to hardcoded default
   var s=localStorage.getItem(FCKEY);
-  if(!s){
-    // No Firebase config yet — login screen stays visible, user can tap "ຕັ້ງຄ່າ Firebase"
-    return;
-  }
-  function tryConnect(){
-    try{var cfg=JSON.parse(s);return initFirebase(cfg);}catch(e){return false;}
-  }
-  // Try immediately, then retry after 2s if Firebase SDK hasn't loaded yet
+  var cfg;
+  try{cfg=s?JSON.parse(s):HARDCODED_FB_CFG;}catch(e){cfg=HARDCODED_FB_CFG;}
+  if(!cfg)return; // no config at all
+  function tryConnect(){try{return initFirebase(cfg);}catch(e){return false;}}
+  // Try immediately, retry after 2s if Firebase SDK hasn't finished loading
   if(!tryConnect()){setTimeout(tryConnect,2000);}
 })();
 
