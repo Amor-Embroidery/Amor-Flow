@@ -838,10 +838,20 @@ function saveO(arr){
 }
 function initFirebase(cfg){
   try{
-    if(firebase.apps.length)firebase.apps[0].delete();
-    var app=firebase.initializeApp(cfg);
-    _fdb=firebase.firestore(app);
-    _fauth=firebase.auth(app);
+    var app;
+    if(firebase.apps.length){
+      // App already exists in this session — reuse it (delete() is async and
+      // calling initializeApp() right after crashes). Listeners are already live.
+      app=firebase.app();
+      _fdb=firebase.firestore(app);
+      _fauth=firebase.auth(app);
+      // If listeners are already running, just persist the config and return.
+      if(_unsub){setConnDot(true);return true;}
+    } else {
+      app=firebase.initializeApp(cfg);
+      _fdb=firebase.firestore(app);
+      _fauth=firebase.auth(app);
+    }
     if(_unsub)_unsub();
     _unsub=_fdb.collection('orders').onSnapshot(function(snap){
       ordersCache=[];
@@ -1074,9 +1084,8 @@ function closeCfg(){var m=document.getElementById('cfg-modal');if(m)m.classList.
   function tryConnect(){
     try{var cfg=JSON.parse(s);return initFirebase(cfg);}catch(e){return false;}
   }
-  setTimeout(function(){
-    if(!tryConnect()){setTimeout(tryConnect,3000);}
-  },800);
+  // Try immediately, then retry after 2s if Firebase SDK hasn't loaded yet
+  if(!tryConnect()){setTimeout(tryConnect,2000);}
 })();
 
 // Register service worker for PWA offline support
@@ -1767,8 +1776,10 @@ function qCard(o,i,sec){
   if(o.status==='new') bt='<button class="qc-btn go" onclick="event.stopPropagation();mvS(\''+o.id+'\',\'in-progress\')">▶ ເລີ່ມ</button>';
   else if(o.status==='in-progress') bt='<button class="qc-btn done" onclick="event.stopPropagation();mvS(\''+o.id+'\',\'done\')">✓ ສໍາເລັດ</button>';
   else bt='<button class="qc-btn" onclick="event.stopPropagation();mvS(\''+o.id+'\',\'new\')">↩</button>';
+  var isHelperCard=curRole==='helper';
   var ps=o.payStatus||(o.fullyPaid?'paid':'unpaid');
-  var payDot=ps==='paid'?'<span style="font-size:.62rem;color:var(--green)">● ຊໍາລະຄົບ</span>':
+  var payDot=isHelperCard?'':
+             ps==='paid'?'<span style="font-size:.62rem;color:var(--green)">● ຊໍາລະຄົບ</span>':
              ps==='partial'?'<span style="font-size:.62rem;color:var(--amber)">● ຮັບບາງ</span>':
              '<span style="font-size:.62rem;color:var(--red)">● ຄ້າງ</span>';
   var tot=o.totalTHB||o.total||0;
@@ -1792,7 +1803,7 @@ function qCard(o,i,sec){
     '<div class="qc-dates">'+
       '<span>📦 '+fdateShort(qd)+'</span>'+
       '<span>🚚 '+fdateShort(pd)+'</span>'+
-      '<span style="color:var(--navy);font-weight:600">'+baht(tot)+'</span>'+
+      (isHelperCard?'':'<span style="color:var(--navy);font-weight:600">'+baht(tot)+'</span>')+
     '</div>'+
     '<div class="qc-foot">'+
       '<div style="display:flex;align-items:center;gap:6px">'+bt+payDot+'</div>'+
